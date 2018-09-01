@@ -1,0 +1,38 @@
+{
+  "manifest": {
+    "bundles": [
+      {
+        "type": "app",
+        "uri": "main",
+        "pkg": "com.hutcwp.main"
+      },
+      {
+        "type": "app",
+        "uri": "test",
+        "pkg": "com.hutcwp.app.test"
+      },
+      {
+        "type": "app",
+        "uri": "livebiz",
+        "pkg": "com.hutcwp.livebiz"
+      },
+      {
+        "type": "app",
+        "uri": "dynamic",
+        "pkg": "me.hutcwp.app.dynamic"
+      },
+      {
+        "type": "lib",
+        "uri": "lib.vendor",
+        "pkg": "com.hutcwp.libvendor"
+      }
+    ],
+    "version": "1.0.0"
+  },
+  "updates": [
+    {
+      "pkg": "me.hutcwp.app.dynamic",
+      "url": "http://192.168.19.125:8080/json/libtsou_cn_app_chat.so"
+    }
+  ]
+}
