@@ -32,7 +32,7 @@
   "updates": [
     {
       "pkg": "me.hutcwp.app.dynamic",
-      "url": "http://192.168.19.125:8080/json/libtsou_cn_app_chat.so"
+      "url": "https://github.com/hutcwp/img-floder/blob/master/libme_hutcwp_app_dynamic.so"
     }
   ]
 }
