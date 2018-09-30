@@ -34,7 +34,7 @@
       "pkg": "me.hutcwp.app.dynamic",
       "url": "https://github.com/hutcwp/img-floder/blob/master/libme_hutcwp_app_dynamic.so"
     }, 
-	{
+    {
       "pkg": "com.hutcwp.livebiz",
       "url": "https://github.com/hutcwp/img-floder/blob/master/libcom_hutcwp_livebiz.so"
     }
