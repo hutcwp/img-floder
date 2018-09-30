@@ -1,0 +1,3135 @@
+Index: plugin_ent_live_client/src/com/yy/live/module/giftdanmu/DanMuUtil.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- plugin_ent_live_client/src/com/yy/live/module/giftdanmu/DanMuUtil.java	(revision 2278045)
++++ plugin_ent_live_client/src/com/yy/live/module/giftdanmu/DanMuUtil.java	(date 1538224031893)
+@@ -2,93 +2,20 @@
+ 
+ import android.content.Context;
+ import android.content.res.Configuration;
+-import android.graphics.Bitmap;
+-import android.graphics.BitmapShader;
+-import android.graphics.Color;
+-import android.graphics.Matrix;
+-import android.graphics.Rect;
+-import android.graphics.drawable.BitmapDrawable;
+-import android.graphics.drawable.Drawable;
+-import android.support.annotation.ColorInt;
+-import android.support.v4.content.ContextCompat;
+-import android.text.Spannable;
+-import android.text.SpannableString;
+-import android.text.SpannableStringBuilder;
+-import android.text.Spanned;
+-import android.text.TextUtils;
+-import android.text.style.AbsoluteSizeSpan;
+-import android.text.style.ForegroundColorSpan;
+-import android.util.TypedValue;
+-import android.view.LayoutInflater;
+ import android.view.View;
+-import android.widget.TextView;
+ 
+-import com.duowan.mobile.entlive.R;
+-import com.yy.game.gametemplate.GameTemplateDanMuFilter;
+ import com.yy.game.gametemplate.GameTemplateLandscapeConfig;
+-import com.yy.live.module.giftdanmu.model.DanMuMedalParseManage;
+-import com.yy.live.module.pk.ChannelPkMvpChannelMsg;
+-import com.yy.mobile.bizmodel.login.LoginUtil;
+-import com.yy.mobile.config.BasicConfig;
+-import com.yy.mobile.image.ImageConfig;
+-import com.yy.mobile.imageloader.ImageLoader;
+-import com.yy.mobile.imageloader.ImageUtil;
+-import com.yy.mobile.richtext.ChannelTicketFilter;
+-import com.yy.mobile.richtext.EmoticonFilter;
+-import com.yy.mobile.richtext.RichTextManager;
+-import com.yy.mobile.richtext.YGroupTicketFilter;
++import com.yy.live.module.giftdanmu.newdanmu.Emitter;
+ import com.yy.mobile.ui.basicfunction.danmu.DanmuOpenStatusType;
+-import com.yy.mobile.ui.basicfunction.danmu.filter.DanMuCommentFilter;
+ import com.yy.mobile.ui.basicgunview.IDanmukuView;
+-import com.yy.mobile.ui.basicgunview.danmucanvas.Bean.BitmapGunPowder;
+-import com.yy.mobile.ui.basicgunview.danmucanvas.Bean.DanmuData;
+ import com.yy.mobile.ui.basicgunview.newgunpower.IDanmuOpenStatus;
+-import com.yy.mobile.ui.gift.message.ArGiftUpgradeMessage;
+-import com.yy.mobile.ui.publicchat.model.medal.LiveRoomLoadDrawableWrapper;
+-import com.yy.mobile.ui.publicchat.top.PublicChatBroadcastMessage;
+-import com.yy.mobile.ui.streamlight.EntIdentityIconSet;
+-import com.yy.mobile.ui.swivelChair.TurnChairMessage;
+-import com.yy.mobile.ui.turntable.TurnTableUtils;
+-import com.yy.mobile.ui.turntable.info.TurnTableTurMessage;
+-import com.yy.mobile.ui.utils.SafeDrawableUtils;
+-import com.yy.mobile.ui.utils.StringUtil;
+-import com.yy.mobile.ui.widget.CustomImageSpan;
+-import com.yy.mobile.util.FP;
+-import com.yy.mobile.util.ResolutionUtils;
+-import com.yy.mobile.util.StringUtils;
+ import com.yy.mobile.util.log.MLog;
+ import com.yy.mobile.util.pref.CommonPref;
+ import com.yymobile.core.ICoreManagerBase;
+-import com.yymobile.core.cavalier.TaskMessage;
+ import com.yymobile.core.channel.ChannelMessage;
+-import com.yymobile.core.flower.FlowerChinneMessage;
+-import com.yymobile.core.gift.GiftChannelMessage;
+-import com.yymobile.core.gift.GiftConfigParser;
+ import com.yymobile.core.invincibledanmu.IInvincibleDanmuCore;
+-import com.yymobile.core.invincibledanmu.InvincibleDanmuInfo;
+-import com.yymobile.core.medal.MedalCenter;
+-import com.yymobile.core.messagequeue.BCItem;
+-import com.yymobile.core.noble.NobleChannelMessage;
+-import com.yymobile.core.noble.NobleHonorChangeWithoutGiftMessage;
+-import com.yymobile.core.noble.NobleLevelUpgradeChannelMessage;
+-import com.yymobile.core.noble.NobleTalkChannelMessage;
+-import com.yymobile.core.truelove.TrueLoveMessage;
+-import com.yymobile.liveapi.plugincenter.PluginPublicMessage;
+ 
+-import java.lang.ref.WeakReference;
+-import java.util.ArrayList;
+-import java.util.Arrays;
+ import java.util.HashMap;
+-import java.util.HashSet;
+-import java.util.LinkedList;
+-import java.util.List;
+-import java.util.Map;
+-import java.util.concurrent.BlockingQueue;
+-import java.util.concurrent.LinkedBlockingQueue;
+-import java.util.concurrent.atomic.AtomicBoolean;
+-import java.util.concurrent.atomic.AtomicInteger;
+-import java.util.regex.Matcher;
+-import java.util.regex.Pattern;
+ 
+ /**
+  * Created by  wangke on 2016/1/19.
+@@ -96,58 +23,25 @@
+  */
+ public abstract class DanMuUtil {
+     private static final String TAG = "DanMuUtil";
+-    private static final String GIFT_PLACE_HOLDER = "[gift]";
+-    private static final String BCTYPE_PLACE_HOLDER = "[bc]";
+-    private static final String IN_CHANNEL_STR = "在频道";
+-    private static final int maxNickLength = 12; //昵称最大长度限制
+-    private static final int imgSize = (int) ResolutionUtils.convertDpToPixel(27, BasicConfig.getInstance().getAppContext());
+-    private List<RichTextManager.Feature> features;
+-    private HashSet<String> emotionMap;
+-    private BlockingQueue<DanmuData> que;
+-    private Thread task;
+-    private AtomicBoolean door = new AtomicBoolean(true);
+-    private LinkedList<BitmapGunPowder> priorityDanmu;
+-    private LinkedList<BitmapGunPowder> normalDanmu;
+-    private LinkedList<BitmapGunPowder> myDanmu;
+-    private AtomicInteger danmuCount = new AtomicInteger();
+-    private boolean mSurfaceView = false;
+-    private WeakReference<IDanmukuView> mDanmuView = null;
+-    private TextView mDanmuTextView; // 缓存弹幕TextView
+-
+-    private int mDanmuTextSize = 14;        //通过BitmapGunPowder构造参数mDanmuTextView来设置弹幕的大小，单位为sp
+-    private boolean openStatus = false;
+-
+-    private static volatile DanMuMedalParseManage mParseManage;
+-
+-    // 弹幕总开关
+-    private boolean mDanmuEnabled;
+-    private int nickLength = 7;
+-    private boolean ignoreOrientation = false;
+-
+-    public int getDanmuTextSize() {
+-        return mDanmuTextSize;
+-    }
+-
+-    public void setDanmuTextSize(int danmuTextSize) {
+-        mDanmuTextSize = danmuTextSize;
+-    }
+ 
+     protected DanMuUtil() {
+-        features = new ArrayList<RichTextManager.Feature>();
+-        emotionMap = new HashSet<String>(500);
+-        features.add(RichTextManager.Feature.CHANNELAIRTICKET);
+-        features.add(RichTextManager.Feature.EMOTICON);
+-        // features.add(RichTextManager.Feature.GROUPTICKET);
+-        features.add(RichTextManager.Feature.NOBLEGIFEMOTION);
+-        emotionMap.addAll(Arrays.asList(EmoticonFilter.getAllSmileCodes()));
+-        que = new LinkedBlockingQueue<DanmuData>();
+-        priorityDanmu = new LinkedList<BitmapGunPowder>();
+-        normalDanmu = new LinkedList<BitmapGunPowder>();
+-        myDanmu = new LinkedList<BitmapGunPowder>();
+         mDanmuEnabled = isDanmuEnabledFromPreference();
+         MLog.info("DanMuUtil", "init DanmuEnabled:" + mDanmuEnabled);
+     }
+ 
++
++    private boolean mDanmuEnabled; // 弹幕总开关
++
++    private boolean ignoreOrientation = false;
++
++    public int getDanmuTextSize() {
++        return Emitter.INSTANCE.getDanmuTextSize();
++    }
++
++    public void setDanmuTextSize(int danmuTextSize) {
++        Emitter.INSTANCE.setDanmuTextSize(danmuTextSize);
++    }
++
+     public static boolean getDanmuEnabledOnSlideHide() {
+         return !GameTemplateLandscapeConfig.getInstance().isGameTemplate() || GameTemplateLandscapeConfig.getInstance().isDanMuOpen();
+     }
+@@ -157,174 +51,24 @@
+     }
+ 
+     public boolean isSurfaceView() {
+-        return mSurfaceView;
++        return Emitter.INSTANCE.isSurfaceView();
+     }
+ 
+     public void setSurfaceView(boolean isSurfaceView) {
+-        mSurfaceView = isSurfaceView;
+-    }
+-
+-    public IDanmukuView getDanmuView() {
+-        if (mDanmuView != null && mDanmuView.get() != null) {
+-            return mDanmuView.get();
+-        }
+-        return null;
+-    }
+-
+-    public void setDanmuView(IDanmukuView danmuView) {
+-        mDanmuView = new WeakReference<IDanmukuView>(danmuView);
+-    }
+-
+-    //处理贵族升级
+-    private Spannable onAppendNobleLevelUpgradeChannelMessage(Context context, NobleLevelUpgradeChannelMessage msg) {
+-        int resNobleIcon = EntIdentityIconSet.getIconResId(msg.nobleLevel, EntIdentityIconSet.DEF_ICON_SIZE);
+-        return msg.getSpannableString(context, resNobleIcon);
+-    }
+-
+-    //处理送花的
+-    private Spannable onAppendFlowerChinneMessage(Context context, FlowerChinneMessage msg) {
+-        StringBuilder sb = new StringBuilder();
+-        if (!FP.empty(msg.nickname)) {
+-            if (msg.nickname.length() > nickLength) {
+-                msg.nickname = msg.nickname.substring(0, nickLength);
+-            }
+-            sb.append(msg.nickname);
+-            sb.append(" 送 ");
+-        }
+-        int res = R.drawable.icon_xiao_hua;
+-        if (msg.isTrueLoveLv) {
+-            res = R.drawable.icon_xiao_hua_rose;
+-        }
+-        sb.append(FlowerChinneMessage.REPLACE_IMGE_FLAG);
+-        Spannable sp = new SpannableString(sb.toString());
+-        // 送花颜色文案跟昵称一样
+-//        sp.setSpan(new ForegroundColorSpan(Color.parseColor(ChannelMessage.nickColor)), 0, sp.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+-        sp = setSpanColor(msg, sp, Color.parseColor(ChannelMessage.nickColor), Color.parseColor(ChannelMessage.nickColor));
+-        Pattern p = Pattern.compile(FlowerChinneMessage.REPLACE_IMGE_FLAG);
+-        Matcher m = p.matcher(sb);
+-        while (m.find()) {
+-            if (!msg.nickname.contains(FlowerChinneMessage.REPLACE_IMGE_FLAG)) {
+-                int mGiftMessageImageSize = (int) ResolutionUtils.convertDpToPixel(ChannelMessage.GIFT_MESSAGE_IMAGE_SIZE_DP, context);
+-                BitmapDrawable bd;
+-                bd = ImageUtil.getBitmapDrawableFromResource(mGiftMessageImageSize, mGiftMessageImageSize, res);
+-                bd.setBounds(0, 0, mGiftMessageImageSize, mGiftMessageImageSize);
+-
+-                CustomImageSpan imageSpan = new CustomImageSpan(bd, CustomImageSpan.ALIGN_VERTICAL_CENTER);
+-                sp.setSpan(imageSpan, m.start(), m.end(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+-            }
+-        }
+-        return sp;
+-    }
+-
+-    public SpannableString getSpannableString(Context context, int loadingImgResId, int defaultXZ, int width, int height, GiftChannelMessage message) {
+-        if (com.yy.mobile.util.FP.empty(message.text)) {
+-            return null;
+-        }
+-
+-        SpannableString sp = new SpannableString(message.text);
+-        int type = message.giftTypeId;
+-        final String giftIconUrl = GiftConfigParser.getInstance().getGiftIconPath(type);
+-        if (giftIconUrl != null) {
+-            try {
+-                final ImageConfig imageConfig = new ImageConfig(width, height);
+-                Drawable giftDrawable = ImageLoader.getBitmapFromCache(giftIconUrl, imageConfig);
+-                if (giftDrawable == null) {
+-                    giftDrawable = ImageLoader.getBitmapFromCache(giftIconUrl, ImageConfig.smallImageConfig());
+-                    if (giftDrawable == null) {
+-                        ImageLoader.preloadBitmap(giftIconUrl, imageConfig, loadingImgResId);
+-                        giftDrawable = LiveRoomLoadDrawableWrapper.INSTANCE.getDrawableWithCache(context, loadingImgResId);
+-                    }
+-                }
+-                giftDrawable.setBounds(0, 0, width, height);
+-                String replace = "{" + type + "}";
+-                int startIdx = sp.toString().indexOf(replace);
+-                int endIdx = startIdx + replace.length();
+-                if (startIdx > -1 && sp.length() >= endIdx) {
+-                    sp.setSpan(new CustomImageSpan(giftDrawable, CustomImageSpan.ALIGN_VERTICAL_CENTER), startIdx, endIdx, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+-                }
+-                loadMedal(context, sp, defaultXZ, width, height, message.medalUrl);
+-            } catch (Throwable throwable) {
+-                MLog.error(TAG, throwable);
+-            }
+-        }
+-        return sp;
++        Emitter.INSTANCE.setSurfaceView(isSurfaceView);
+     }
+ 
+-    public void loadMedal(Context context, SpannableString sp, int defalutImgResId, int width, int height, String medalUrl) {
+-        if (com.yy.mobile.util.FP.empty(medalUrl)) {
+-            return;
+-        }
+-        ImageLoader.preloadBitmap(medalUrl, ImageConfig.fullImageConfig(), defalutImgResId);
+-        BitmapDrawable medalDrawable = ImageLoader.getBitmapFromCache(medalUrl, ImageConfig.fullImageConfig());
+-        if (medalDrawable == null) {
+-            medalDrawable = ImageUtil.getBitmapDrawableFromResource(width, height, defalutImgResId);
+-        }
++    public void stopDanmu() {
++        Emitter.INSTANCE.stopDanmu();
++        MLog.info("DanMuUtil", "stopDanMu");
++    }
+ 
+-        int newWidth = (int) ResolutionUtils.convertDpToPixel(50.5f, context);
+-        int newHeight = (int) ResolutionUtils.convertDpToPixel(21.5f, context);
+-        medalDrawable.setBounds(0, 0, newWidth, newHeight);
+-        sp.setSpan(new CustomImageSpan(medalDrawable, CustomImageSpan.ALIGN_VERTICAL_CENTER), 0, 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
++    public void setCurrentPosition(DanMuPosition mCurrentPosition) {
++        Emitter.INSTANCE.setCurrentPosition(mCurrentPosition);
+     }
+ 
+-    public void initGift(GiftChannelMessage message, Context context) {
+-        int mGiftMessageImageSize = (int) ResolutionUtils.convertDpToPixel(ChannelMessage.GIFT_MESSAGE_IMAGE_SIZE_DP, context) + 1;
+-        Spannable spannable = getSpannableString(context, R.drawable.lr_ic_default_gift, R.drawable.xunzhang_default_bitmap, mGiftMessageImageSize, mGiftMessageImageSize, message);
+-        if ((message).type == GiftChannelMessage.GiftType.ComboGift) {
+-            int x = message.text.lastIndexOf("X");
+-            int zu = message.text.lastIndexOf("组");
+-            spannable.setSpan(new AbsoluteSizeSpan(19, true), x + 1, zu, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+-        }
+-        spannable = addMentel(message, spannable, context);
+-        spannable = setSpanColor(message, spannable, Color.parseColor(ChannelMessage.nickColor), Color.parseColor(ChannelMessage.giftTxtColor));
+-        // if (!MedalCenter.getInstance().isActMedal()) {
+-        addGunPowder(spannable, 2, Color.parseColor(ChannelMessage.giftTxtColor), 0, message.uid, -1, "", message.pureText, message.isReplay, true, false);
+-        // }
+-    }
+-
+-    public Drawable getFixedSizedNobleImage(int reSource, int w, int h, Context context) {
+-        BitmapDrawable baseImage = ImageLoader.getBitmapDrawableFromResource(reSource, ImageConfig.fullImageConfig());
+-        BitmapDrawable reSize = null;
+-        int tw = (int) ResolutionUtils.convertDpToPixel(w, context);
+-        int th = (int) ResolutionUtils.convertDpToPixel(h, context);
+-        if (baseImage != null) {
+-            reSize = ImageLoader.getBitmapFromCache(reSource + "" + tw + th);
+-            if (reSize == null) {
+-                Bitmap bitmap = baseImage.getBitmap();
+-                if (bitmap == null) {
+-                    return null;
+-                }
+-                bitmap = Bitmap.createScaledBitmap(bitmap, tw, th, true);
+-                reSize = new BitmapDrawable(context.getResources(), bitmap);
+-                ImageLoader.addBitmapToCache(reSource + "" + tw + th, reSize);
+-            }
+-
+-            reSize.setBounds(0, 0, reSize.getIntrinsicWidth(), reSize.getIntrinsicHeight());
+-        }
+-        return reSize != null ? reSize : baseImage;
+-
+-    }
+-
+-    private void initDanmuTextView(Context context) {
+-        if (mDanmuTextView == null) {
+-            try {
+-                LayoutInflater inflater = (LayoutInflater) BasicConfig.getInstance().getAppContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+-                View view = inflater.inflate(R.layout.danmu_message_item, null);
+-                mDanmuTextView = view.findViewById(R.id.tv_danmu_content);
+-
+-            } catch (Throwable throwable) {
+-                MLog.error(TAG, throwable);
+-            }
+-        }
+-        mDanmuTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, getDanmuTextSize());
+-    }
+-
+-    public void clear() {
+-        mDanmuTextView = null;
+-        mParseManage = null;
+-
+-        if (MLog.isLogLevelAboveDebug()) {
+-            MLog.debug(TAG, " clearPublicChatMedal ");
+-        }
++    private void initDanmuTextView() {
++        Emitter.INSTANCE.initDanmuTextView();
+     }
+ 
+     public void setIgnoreOrientation(boolean ignoreOrientation) {
+@@ -335,343 +79,8 @@
+         if (!checkValid(context)) {
+             return;
+         }
+-        Spannable spannable;
+-        MLog.debug(TAG, "channelMessage: %s", message);
+-        if (GameTemplateDanMuFilter.getInstance().intercept(message)) {
+-            spannable = GameTemplateDanMuFilter.getInstance().getSpannable(context, message, features);
+-            if (spannable != null) {
+-                addGunPowder(spannable, 100, Color.parseColor(ChannelMessage.chatMessageColor), 0, message.uid, -1, "",
+-                        message.pureText, message.isReplay, false, false);
+-            }
+-        } else if (DanMuCommentFilter.INSTANCE.interceptAnchorLiveFilter(message)) {      //再仿照GameTemplateDanMuFilter来，如果超过3个后再优化
+-            spannable = DanMuCommentFilter.INSTANCE.getSpannable(context, message, features);
+-            if (spannable != null) {
+-                addGunPowder(spannable, 100, Color.parseColor(ChannelMessage.chatMessageColor), 0, message.uid, -1, "",
+-                        message.pureText, message.isReplay, false, false);
+-            }
+-        } else if (message instanceof GiftChannelMessage) { //付费礼物
+-            if (LiveDanMuUtil.isInUnNeedSubcribeList(LiveDanMuUtil.unSubscribeRunningWaterGiftType)
+-                    && ((GiftChannelMessage) message).type != GiftChannelMessage.GiftType.ComboGift) {
+-                return;
+-            }
+-            if (message.isReplay && message.nickname != null) { // 回播送礼流水 message.text 并未拼接入昵称
+-                String nickName = message.nickname;
+-                if (nickName.length() > nickLength) {
+-                    nickName = nickName.substring(0, nickLength);
+-                }
+-                if (!StringUtils.isNullOrEmpty(nickName) && !message.text.contains(nickName)) {
+-                    message.text = nickName + " " + message.text;
+-                }
+-            }
+-            int mGiftMessageImageSize = (int) ResolutionUtils.convertDpToPixel(23, context) + 1;
+-            int type = ((GiftChannelMessage) message).giftTypeId;
+-            final String giftIconUrl = GiftConfigParser.getInstance().getGiftIconPath(type);
+-            final ImageConfig config = new ImageConfig(mGiftMessageImageSize, mGiftMessageImageSize);
+-            BitmapDrawable giftDrawable = ImageLoader.getBitmapFromCache(giftIconUrl, config);
+-            if (giftIconUrl != null && giftDrawable == null) {
+-                ImageLoader.loadBitmap(BasicConfig.getInstance().getAppContext(), giftIconUrl, new ImageLoader.BitmapLoadListener() {
+-                    @Override
+-                    public void onLoadFailed(Exception e) {
+-
+-                    }
+-
+-                    @Override
+-                    public void onResourceReady(Bitmap bitmap) {
+-                        BitmapDrawable bitmapDrawable = new BitmapDrawable(BasicConfig.getInstance().getAppContext().getResources(), bitmap);
+-                        ImageLoader.addBitmapToCache(giftIconUrl, bitmapDrawable, config);
+-                        initGift((GiftChannelMessage) message, context);
+-                    }
+-                });
+-
+-                //return;  这里return会导致第一个弹幕是礼物不会立即显示的BUG，先注释，如有问题联系：909075276
+-            } else {
+-                initGift((GiftChannelMessage) message, context);
+-            }
+-        } else if (message instanceof NobleChannelMessage) {
+-            // 旧版贵族喊话
+-            String tmp = message.nickname + "：" + message.text;
+-            spannable = DanmuTextManager.getSpannableString(context, tmp, features);
+-            spannable = addMentel(message, spannable, context);
+-            spannable = setSpanColor(message, spannable, Color.parseColor(ChannelMessage.nickColor), Color.parseColor(ChannelMessage.giftTxtColor));
+-            if (!MedalCenter.getInstance().isActMedal()) {
+-                addGunPowder(spannable, 2, Color.parseColor(ChannelMessage.giftTxtColor), 0, message.uid, -1, "", message.pureText, message.isReplay, false, false);
+-            }
+-        } else if (message instanceof NobleTalkChannelMessage) {
+-            // 新版贵族喊话
+-            String tmp = message.nickname + "：" + message.text;
+-            spannable = DanmuTextManager.getSpannableString(context, tmp, features);
+-            spannable = addMentel(message, spannable, context);
+-            spannable = setSpanColorAndBackground(message,
+-                    spannable,
+-                    context.getResources().getColor(R.color.treehole_name),
+-                    context.getResources().getColor(R.color.common_color_11_live));
+-            if (!MedalCenter.getInstance().isActMedal()) {
+-                addGunPowder(spannable,
+-                        2,
+-                        Color.parseColor(ChannelMessage.giftTxtColor),
+-                        0,
+-                        message.uid,
+-                        -1,
+-                        "",
+-                        message.pureText,
+-                        message.isReplay,
+-                        false,
+-                        false,
+-                        ContextCompat.getDrawable(context, R.drawable.live_noble_talk_channel_message_text_bg));
+-            }
+-        } else if (message instanceof PublicChatBroadcastMessage) { //中小飞机礼物、送热气球 弹幕插入
+-
+-            BCItem bcItem = (BCItem) ((PublicChatBroadcastMessage) message).mChatBCWrapper.getInnerEntity();
+-            if (bcItem == null) {
+-                return;
+-            }
+-            //拼接弹幕的Spannable内容
+-            spannable = getBroadCastDanMuSpannable(context, bcItem);
+-            Drawable drawable;
+-            if (bcItem.bcType == 0) { //0:礼物
+-                //背景设置红色drawable样式
+-                drawable = ContextCompat.getDrawable(context, R.drawable.live_danmu_broadcast_plane_gift_bg);
+-            } else if (bcItem.bcType == 1) { //1：热气球
+-                //背景设置蓝色drawable样式
+-                drawable = ContextCompat.getDrawable(context, R.drawable.live_danmu_broadcast_hotball_gift_bg);
+-            } else {
+-                //背景设置黄色drawable样式
+-                drawable = ContextCompat.getDrawable(context, R.drawable.live_danmu_broadcast_orange_bg);
+-            }
+-
+-            addGunPowder(spannable, 0, Color.parseColor(ChannelMessage.chatMessageColor), 0,
+-                    message.uid, -1, "", message.pureText, message.isReplay, false, false, drawable);
+-
+-        } else if (message instanceof FlowerChinneMessage) {
+-            spannable = onAppendFlowerChinneMessage(context, (FlowerChinneMessage) message);
+-            spannable = addMentel(message, spannable, context);
+-            spannable = setSpanColor(message, spannable, Color.parseColor(ChannelMessage.nickColor), Color.parseColor(ChannelMessage.nickColor));
+-            if (!MedalCenter.getInstance().isActMedal()) {
+-                // 送花跟送一一样加背景
+-                addGunPowder(spannable, 2, Color.parseColor(ChannelMessage.nickColor), 0, message.uid, -1, "", message.pureText, message.isReplay, true, false);
+-            }
+-        } else if (message instanceof NobleLevelUpgradeChannelMessage) { //贵族等级晋升消息
+-            spannable = onAppendNobleLevelUpgradeChannelMessage(context, (NobleLevelUpgradeChannelMessage) message);
+-            spannable = setSpanColor(message, spannable, Color.parseColor(ChannelMessage.nickColor), Color.parseColor(ChannelMessage.giftTxtColor));
+-            if (!MedalCenter.getInstance().isActMedal()) {
+-                addGunPowder(spannable, 3, Color.parseColor(ChannelMessage.giftTxtColor), 0, message.uid, -1, "", message.pureText, message.isReplay, false, false);
+-            }
+-        } else if (message instanceof NobleHonorChangeWithoutGiftMessage) { //荣耀值增加信息
+-            NobleHonorChangeWithoutGiftMessage nobleHonorChangeWithoutGiftMessage = (NobleHonorChangeWithoutGiftMessage) message;
+-            String source = nobleHonorChangeWithoutGiftMessage.source.equals("PC") ? "PC" : "手机端";
+-            switch (nobleHonorChangeWithoutGiftMessage.messageType) {
+-                case 1:
+-                    nobleHonorChangeWithoutGiftMessage.text = "今天首次" + source + "登录，涨荣耀值" + nobleHonorChangeWithoutGiftMessage.increaseHonor;
+-                    break;
+-                case 2:
+-                    nobleHonorChangeWithoutGiftMessage.text = "今天首次" + source + "送礼，涨荣耀值" + nobleHonorChangeWithoutGiftMessage.increaseHonor;
+-                    break;
+-                case 5:
+-                    nobleHonorChangeWithoutGiftMessage.text = "累计登录" + nobleHonorChangeWithoutGiftMessage.logionDaySum + "天，今天首次" + source + "登录，涨荣耀值" + nobleHonorChangeWithoutGiftMessage.increaseHonor;
+-                    break;
+-                case 6: {
+-                    if (nobleHonorChangeWithoutGiftMessage.bigpayMonth <= 0 && nobleHonorChangeWithoutGiftMessage.allMoney > 0) {
+-                        nobleHonorChangeWithoutGiftMessage.text = "消费额" + nobleHonorChangeWithoutGiftMessage.allMoney + "，今天首次" + source + "送礼，涨荣耀值" + nobleHonorChangeWithoutGiftMessage.increaseHonor;
+-                    } else if (nobleHonorChangeWithoutGiftMessage.bigpayMonth > 0) {
+-                        nobleHonorChangeWithoutGiftMessage.text = "今天首次" + source + "送礼，涨荣耀值" + nobleHonorChangeWithoutGiftMessage.increaseHonor;
+-                    }
+-                    break;
+-                }
+-                default:
+-            }
+-            nobleHonorChangeWithoutGiftMessage.text = "noble" + nobleHonorChangeWithoutGiftMessage.nickname + " " + nobleHonorChangeWithoutGiftMessage.text;
+-            //MLog.debug("", "wangke" + nobleHonorChangeWithoutGiftMessage.toString());
+-
+-            spannable = RichTextManager.getInstance().getSpannableString(context, nobleHonorChangeWithoutGiftMessage.text, features);
+-            int start = nobleHonorChangeWithoutGiftMessage.text.indexOf("荣耀值");
+-            if (start >= 0) {
+-                Drawable nobleDrawable = context.getResources().getDrawable(R.drawable.ic_nobel_honor);
+-                nobleDrawable.setBounds(0, 0, nobleDrawable.getIntrinsicWidth(), nobleDrawable.getIntrinsicHeight());
+-                spannable.setSpan(new CustomImageSpan(nobleDrawable, CustomImageSpan.ALIGN_VERTICAL_CENTER), start, start + 3, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+-            }
+-            Drawable nobleDrawable = getFixedSizedNobleImage(EntIdentityIconSet.getIconResId(nobleHonorChangeWithoutGiftMessage.nobleLevel),
+-                    ChannelMessage.MEDAL_ICON_SIZE_DP, ChannelMessage.MEDAL_ICON_SIZE_DP, context);
+-            if (nobleDrawable != null) {
+-                nobleDrawable.setBounds(0, 0, nobleDrawable.getIntrinsicWidth(), nobleDrawable.getIntrinsicHeight());
+-            }
+-            spannable.setSpan(new CustomImageSpan(nobleDrawable, CustomImageSpan.ALIGN_VERTICAL_CENTER, 0, ResolutionUtils.convertDpToPixel(6, context)),
+-                    0, "noble".length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+-            spannable = setSpanColor(message, spannable, Color.parseColor(ChannelMessage.nickColor), Color.parseColor(ChannelMessage.giftTxtColor));
+-            if (!MedalCenter.getInstance().isActMedal()) { //插入弹幕
+-                que.add(new DanmuData(spannable, message.pureText, 3, message.uid, message.isReplay));
+-            }
+-        } else if (message instanceof TurnTableTurMessage) {
+-            Map<String, String> map = ((TurnTableTurMessage) message).map;
+-            String name = map.get("name");
+-            String num = map.get("red_num");
+-            String ss = map.get("desc");
+-            String channel = map.get("ch_id");
+-            String left = map.get("left");
+-            // Log.w("wangke3","     " +3+"type"+"  "+ss);
+-            if (ss == null || ss.length() == 0) {
+-                return;
+-            }
+-            StringBuilder sb = new StringBuilder(ss);
+-            sb.insert(0, "image");
+-            int i1 = sb.lastIndexOf("[num]");
+-            int i2 = sb.lastIndexOf("[name]");
+-            int i3 = sb.lastIndexOf("[short_chId]");
+-            int i4 = sb.lastIndexOf("left");
+-            if (i1 > 0) {
+-                sb.replace(i1, i1 + "[num]".length(), num);
+-            }
+-            if (i2 > 0) {
+-                if (name.length() >= 12) {
+-                    name = name.substring(0, 12) + "...";
+-                }
+-                i2 = sb.lastIndexOf("[name]");
+-                sb.replace(i2, i2 + "[name]".length(), name);
+-            }
+-            if (i3 > 0) {
+-                i3 = sb.lastIndexOf("[short_chId]");
+-                sb.replace(i3, i3 + "[short_chId]".length(), channel);
+-            }
+-            if (i4 > 0) {
+-                i4 = sb.lastIndexOf("left");
+-                sb.replace(i4, i4 + "left".length(), left);
+-            }
+-            Spannable sp = DanmuTextManager.getSpannableString(context, sb, features);
+-            Drawable drawable = context.getResources().getDrawable(R.drawable.turntable_toutiao);
+-            drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
+-            CustomImageSpan imageSpan = new CustomImageSpan(drawable, CustomImageSpan.ALIGN_VERTICAL_CENTER, 0, ResolutionUtils.convertDpToPixel(6, context));
+-            sp.setSpan(imageSpan, 0, "image".length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+-            sp = setSpanColor(message, sp, Color.parseColor(ChannelMessage.nickColor), Color.parseColor(ChannelMessage.giftTxtColor));
+-            if (!MedalCenter.getInstance().isActMedal()) {
+-                addGunPowder(sp, 0, Color.parseColor(ChannelMessage.giftTxtColor), 0,
+-                        message.uid, -1, sb.toString(), message.pureText,
+-                        message.isReplay, false, false);
+-            }
+-        } else if (message.channel_message_type.equals(ChannelMessage.ChannelMsgType.SHARE_MESSAGE_TYPE) || message.channel_message_type.equals(ChannelMessage.ChannelMsgType.SUBSCRIBE_MESSAGE_TYPE)) {
+-            message.text = message.nickname + " " + message.text;
+-            spannable = new SpannableStringBuilder(message.text);
+-            spannable = addMentel(message, spannable, context);
+-            spannable = setSpanColor(message, spannable, Color.parseColor(ChannelMessage.nickColor), Color.parseColor(ChannelMessage.nickColor));
+-            if (!MedalCenter.getInstance().isActMedal()) {
+-                addGunPowder(spannable, 0, Color.parseColor(ChannelMessage.nickColor), 0,
+-                        message.uid, -1, spannable.toString(), message.pureText,
+-                        message.isReplay, false, false);
+-            }
+-        } else if (message instanceof TurnChairMessage) { //转椅消息
+-            spannable = new SpannableStringBuilder(message.text);
+-            spannable.setSpan(new ForegroundColorSpan(Color.parseColor(ChannelMessage.giftTxtColor)), 0, message.text.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+-            if (!MedalCenter.getInstance().isActMedal()) {
+-                addGunPowder(spannable, 0, Color.parseColor(ChannelMessage.giftTxtColor), 0,
+-                        message.uid, -1, spannable.toString(), message.pureText,
+-                        message.isReplay, false, false);
+-            }
+-        } else if (message instanceof ChannelPkMvpChannelMsg) {
+-            String text = message.nickname + "成功抢夺坐席";
+-            spannable = new SpannableStringBuilder(text);
+-            spannable = setSpanColor(message, spannable, Color.parseColor(ChannelMessage.nickColor), Color.parseColor(ChannelMessage.chatMessageColor));
+-            addGunPowder(spannable, 0, Color.parseColor(ChannelMessage.nickColor), 0, message.uid, -1, "", message.pureText, message.isReplay, true, false);
+-        } else {
+-            // 狼人杀 app 竖屏跑马灯中的流水信息在横屏弹幕中都屏蔽掉 任务体系流水信息，插件中心流水信息，Ar礼物， 珍爱团升级信息
+-            if (((message instanceof TaskMessage) || (message instanceof PluginPublicMessage)
+-                    || (message instanceof ArGiftUpgradeMessage) || (message instanceof TrueLoveMessage))) {
+-                return;
+-            }
+-            if (!((message instanceof TaskMessage) || (message instanceof PluginPublicMessage)
+-                    || (message instanceof ArGiftUpgradeMessage) || (message instanceof TrueLoveMessage))) {
+-                message.pureText = message.text;    //只有默认文案做长按点击
+-            }
+-
+-            if (message.spannable != null) { //插入弹幕消息
+-                DanmuData data = new DanmuData(message.spannable, message.pureText, 0, -1, message.isReplay);
+-                data.backGround = -1;
+-                que.add(data);
+-                checkTask(context);
+-                return;
+-            }
+-            boolean isAir = false;
+-            if (message.nickname != null) {
+-                if (message.nickname.length() > nickLength) {
+-                    message.nickname = message.nickname.substring(0, nickLength);
+-                }
+-            }
+-            if (message.nickname != null) {
+-                message.text = message.nickname + " " + message.text;
+-            }
+-            spannable = new SpannableStringBuilder("a");
+-            ((SpannableStringBuilder) spannable).append(message.nickname).append(" ").append(message.text);
+-            if (!TextUtils.isEmpty(message.text)) {
+-                if (message.text != null) {
+-                    if (YGroupTicketFilter.isYGroupTicketMessage(message.text)) {
+-                        return;
+-                    }
+-                    // 狼人杀 app 不解析飞机票
+-                    if (ChannelTicketFilter.isChannelTicketMessage(message.text)) {
+-                        spannable = DanmuTextManager.getSpannableString(context, message.text, features);
+-                        isAir = true;
+-                    } else {
+-                        if (message.text.length() > 30) {
+-                            String tmp = message.text;
+-                            int count = 0;
+-                            int i = 0;
+-                            for (; i < tmp.length() - 5; i++) {
+-                                if (count >= 20) {
+-                                    tmp = tmp.substring(0, i);
+-                                    break;
+-                                }
+-
+-                                if (tmp.charAt(i) == '/') {
+-                                    String s = tmp.substring(i, i + 4);
+-                                    if (emotionMap.contains(s)) {
+-                                        i = i + 3;
+-                                        count = count + 1;
+-                                    } else {
+-                                        s = tmp.substring(i, i + 5);
+-                                        if (emotionMap.contains(s)) {
+-                                            i = i + 4;
+-                                            count = count + 1;
+-                                        }
+-                                    }
+-                                } else {
+-                                    count = count + 1;
+-                                }
+-                            }
+-                            if (count < 20) {
+-                                tmp = tmp.substring(0, i);
+-                            }
+-
+-                            message.text = tmp + "...";
+-                        }
+-                        spannable = DanmuTextManager.getSpannableString(context, message.text, features);
+-                    }
+-                }
+-            }
+-
+-            if (isAir) {
+-                spannable = addMentel(message, spannable, context);
+-                spannable = setSpanColor(message, spannable, Color.parseColor(ChannelMessage.nickColor), Color.parseColor(ChannelMessage.nickColor));
+-                addGunPowder(spannable, 0, Color.parseColor(ChannelMessage.nickColor), 0, message.uid, -1,
+-                        message.text, message.pureText, message.isReplay, false, isAir);
+-            } else {
+-                spannable = addMentel(message, spannable, context);
+-                if (!MedalCenter.getInstance().isActMedal()) {
+-                    if (LoginUtil.getUid() != message.uid) {
+-                        if (message.channel_message_type.equals(ChannelMessage.ChannelMsgType.TURE_LOVE_TYPE)) {
+-                            spannable = setSpanColor(message, spannable, Color.parseColor(ChannelMessage.nickColor), Color.parseColor(ChannelMessage.giftTxtColor));
+-                            addGunPowder(spannable, 3, Color.parseColor(ChannelMessage.giftTxtColor), 0, message.uid, -1, "", message.pureText, message.isReplay, false, false);
+-                        } else {
+-                            spannable = setSpanColor(message, spannable, Color.parseColor(ChannelMessage.nickColor), Color.parseColor(ChannelMessage.chatMessageColor));
+-                            addGunPowder(spannable, 0, Color.parseColor(ChannelMessage.chatMessageColor), 0,
+-                                    message.uid, -1, "", message.pureText, message.isReplay, false, false);
+-                        }
+-                    } else {
+-                        //bug id ANDROIDYY-27346 登录用户发言字体颜色是橙色
+-                        spannable = setSpanColor(message, spannable, Color.parseColor(ChannelMessage.nickColor), Color.parseColor(ChannelMessage.nickColor));
+-                        addGunPowder(spannable, 100, Color.parseColor(ChannelMessage.chatMessageColor), 0,
+-                                message.uid, -1, "", message.pureText, message.isReplay, false, false);
+-                    }
+-                }
+-            }
+-        }
+-        checkTask(context);
++        Emitter.INSTANCE.appendDanmu(message, context);
++        Emitter.INSTANCE.checkTask();
+     }
+ 
+     /**
+@@ -682,442 +91,21 @@
+         if (!checkValid(context)) {
+             return;
+         }
+-
+-        Spannable spannable;
+-        if (message.spannable == null) {
+-            if (message.text == null) {
+-                return;
+-            } else {
+-                spannable = new SpannableStringBuilder(message.text);
+-            }
+-        } else {
+-            spannable = message.spannable;
+-        }
+-
+-        try {
+-            if (DanMuCommentFilter.INSTANCE.interceptAnchorLiveFilter(message)) {      //再仿照GameTemplateDanMuFilter来，如果超过3个后再优化
+-                spannable = DanMuCommentFilter.INSTANCE.getSpannable(context, message, features);
+-                if (spannable != null) {
+-                    addGunPowder(spannable, 100, Color.parseColor(ChannelMessage.chatMessageColor), 0, message.uid, -1,
+-                            DanMuCommentFilter.INSTANCE.isNormalPeople(message) + "", message.pureText, message.isReplay, false, false);
+-                }
+-            } else if (message instanceof GiftChannelMessage) { //付费礼物
+-                addGunPowder(spannable, 2, Color.parseColor(ChannelMessage.giftTxtColor), 0, message.uid, -1, "", message.pureText, message.isReplay, true, false);
+-            } else if (message instanceof NobleChannelMessage) { //TODO 贵族喊话消息
+-                addGunPowder(spannable, 2, Color.parseColor(ChannelMessage.giftTxtColor), 0, message.uid, -1, "", message.pureText, message.isReplay, false, false);
+-            } else if (message instanceof FlowerChinneMessage) {
+-                addGunPowder(spannable, 2, Color.parseColor(ChannelMessage.nickColor), 0, message.uid, -1, "", message.pureText, message.isReplay, true, false);
+-            } else if (message instanceof NobleLevelUpgradeChannelMessage) { //贵族等级晋升消息
+-                addGunPowder(spannable, 3, Color.parseColor(ChannelMessage.giftTxtColor), 0, message.uid, -1, "", message.pureText, message.isReplay, false, false);
+-            } else if (message instanceof NobleHonorChangeWithoutGiftMessage) { //荣耀值增加信息
+-                addDanMuData(spannable, new DanmuData(spannable, message.pureText, 3, message.uid, message.isReplay));
+-            } else if (message instanceof TurnTableTurMessage) {
+-                addGunPowder(spannable, 0, Color.parseColor(ChannelMessage.giftTxtColor), 0,
+-                        message.uid, -1, spannable.toString(), message.pureText,
+-                        message.isReplay, false, false);
+-            } else if (message.channel_message_type.equals(ChannelMessage.ChannelMsgType.SHARE_MESSAGE_TYPE) || message.channel_message_type.equals(ChannelMessage.ChannelMsgType.SUBSCRIBE_MESSAGE_TYPE)) {
+-                addGunPowder(spannable, 0, Color.parseColor(ChannelMessage.nickColor), 0,
+-                        message.uid, -1, spannable.toString(), message.pureText,
+-                        message.isReplay, false, false);
+-            } else if (message instanceof TurnChairMessage) {
+-                addGunPowder(spannable, 0, Color.parseColor(ChannelMessage.giftTxtColor), 0,
+-                        message.uid, -1, spannable.toString(), message.pureText,
+-                        message.isReplay, false, false);
+-            } else {
+-                DanmuData data = new DanmuData(message.spannable, message.pureText, 0, -1, message.isReplay);
+-                data.backGround = -1;
+-                addDanMuData(spannable, data);
+-            }
+-        } catch (Throwable throwable) {
+-            MLog.error("DanMuUtil", "appendSpannableDanMu: ", throwable);
+-        }
+-
+-        checkTask(context);
+-    }
+-
+-    private void addDanMuData(Spannable spannable, DanmuData danmuData) {
+-        addGunPowder(spannable, danmuData.priority, danmuData.textColor, danmuData.lineNum, danmuData.senderUid, danmuData.backGround,
+-                danmuData.contend, danmuData.pureText, danmuData.isReplay, danmuData.isGiftMessage, danmuData.isAir);
++        Emitter.INSTANCE.appendSpannableDanMu(message, context);
++        Emitter.INSTANCE.checkTask();
+     }
+ 
+     private boolean checkValid(Context context) {
+         DanmuTextManager.init();
+-        initDanmuTextView(context);
++        initDanmuTextView();
+         // 这里逻辑写的太死了，外面都让业务做了一堆条件判断，然后设置了要不要显示弹幕，这里居然还去取屏幕方向判断...
+         if (context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT
+                 && !ignoreOrientation) { // 不想动这里的逻辑影响旧业务...加个额外的判断绕过这里
+             return false;
+         }
+-
+         return !(!isDanmuEnabled() || !isOpen());
+     }
+ 
+-    public synchronized void checkTask(Context context) {
+-        if (task == null) {
+-            init(context);
+-        }
+-    }
+-
+-    private Spannable addMentel(ChannelMessage message, Spannable spannable, final Context context) {
+-
+-        // 7.8 重构 替换成新的解析代码
+-        if (mParseManage == null) {
+-            synchronized (DanMuMedalParseManage.class) {
+-                if (mParseManage == null) {
+-                    mParseManage = new DanMuMedalParseManage();
+-                    mParseManage.initDanMuModelType();
+-                    //下载icon后，不再补一条带icon的重复弹幕。
+-                    // mParseManage.setIAppendDanMuListener(new IAppendDanMuListener() {
+-                    //     @Override
+-                    //     public void onUpdateCallback(ChannelMessage message, Context context) {
+-                    //         appendDanmu(message, context);
+-                    //     }
+-                    // });
+-                }
+-            }
+-        }
+-        return mParseManage.parseDanMuSpannable(context, message, spannable);
+-    }
+-
+-    public Spannable setSpanColor(ChannelMessage message, Spannable spannable, int nicknameColor, int textColor) {
+-        if (spannable == null) {
+-            return null;
+-        }
+-        spannable.setSpan(new ForegroundColorSpan(textColor), 0, spannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+-        if (!TextUtils.isEmpty(message.nickname)) {
+-            int idx = spannable.toString().indexOf(message.nickname);
+-            if (idx >= 0 && idx < spannable.length()) {
+-                spannable.setSpan(new ForegroundColorSpan(nicknameColor), idx, idx + message.nickname.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+-            }
+-        }
+-        return spannable;
+-    }
+-
+-    /**
+-     * 设置 中小飞机、热气球广播弹幕样式
+-     *
+-     * @param context 上下文参数
+-     * @param item    广播实体
+-     */
+-    private SpannableStringBuilder getBroadCastDanMuSpannable(Context context, BCItem item) {
+-
+-        if (item.bcType == 0) { //0:礼物
+-            return getCombGiftSpannable(item, context);
+-        } else if (item.bcType == 1) { //1：热气球 或者 樱花
+-            return getHotBallSpannable(item, context);
+-        } else if (item.bcType == 4 || item.bcType == 5) { // 4、5 红包广播
+-            return getRedPacketSpannable(item, context);
+-        }
+-        return null;
+-    }
+-
+-    private SpannableStringBuilder getHotBallSpannable(BCItem item, Context context) {
+-        SpannableStringBuilder spannable = new SpannableStringBuilder();
+-
+-        String fromNick = TextUtils.isEmpty(item.fromNick) ? "" : item.fromNick;
+-        if (TextUtils.isEmpty(fromNick)) {
+-            fromNick = TextUtils.isEmpty(item.extendInfo.get("name")) ? "" : item.extendInfo.get("name");
+-        }
+-        if (fromNick.length() > maxNickLength) {
+-            fromNick = fromNick.substring(0, maxNickLength) + "...";
+-        }
+-
+-        spannable.append(BCTYPE_PLACE_HOLDER)
+-                .append(fromNick)
+-                .append(IN_CHANNEL_STR)
+-                .append(String.valueOf(item.sid));
+-
+-        Drawable bcTypeDrawable;
+-        if (!FP.empty(item.extendInfo) && TurnTableUtils.checkIsCherryBlossomsBroadcast(
+-                item.extendInfo.get(TurnTableUtils.TurnTableBroadCastKey))) {
+-            spannable.append(" 送出浪漫奢华的浪漫樱花！");
+-        } else {
+-            spannable.append(" 送出浪漫奢华的热气球之约！");
+-        }
+-
+-        //设置所有文本颜色
+-        int idxStart = 0;
+-        int idxEnd = spannable.toString().length();
+-        spannable.setSpan(new AbsoluteSizeSpan(13, true), idxStart, idxEnd, Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+-        spannable.setSpan(new ForegroundColorSpan(Color.parseColor("#ffffff")), idxStart, idxEnd, Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
+-
+-        //设置樱花、热气球礼物Icon
+-        int giftType = Integer.parseInt(item.extendInfo.get("gift_id"));
+-        String giftIconUrl = GiftConfigParser.getInstance().getGiftIconPath(giftType);
+-
+-        if (!StringUtil.isNullOrEmpty(giftIconUrl)) {
+-            bcTypeDrawable = ImageLoader.getBitmapFromCache(giftIconUrl, ImageConfig.smallImageConfig());
+-            if (null == bcTypeDrawable) {
+-                ImageLoader.preloadBitmap(giftIconUrl, ImageConfig.smallImageConfig(), R.drawable.lr_ic_default_gift);
+-            }
+-        } else {
+-            bcTypeDrawable = SafeDrawableUtils.getDrawable(R.drawable.lr_ic_default_gift);
+-        }
+-
+-        int idxBcIcon = spannable.toString().indexOf(BCTYPE_PLACE_HOLDER);
+-        if (bcTypeDrawable != null) {
+-            bcTypeDrawable.setBounds(0, 0, imgSize, imgSize);
+-            spannable.setSpan(new CustomImageSpan(bcTypeDrawable, CustomImageSpan.ALIGN_VERTICAL_CENTER, 0, 8),
+-                    idxBcIcon, idxBcIcon + BCTYPE_PLACE_HOLDER.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+-        } else {
+-            spannable.replace(idxBcIcon, idxBcIcon + BCTYPE_PLACE_HOLDER.length(), "");
+-        }
+-
+-        //设置“在频道”的字体样式
+-        int idxChannel = spannable.toString().indexOf(IN_CHANNEL_STR);
+-        int enIdxChannel = idxChannel + IN_CHANNEL_STR.length();
+-        spannable.setSpan(new AbsoluteSizeSpan(13, true), idxChannel, enIdxChannel, Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+-        spannable.setSpan(new ForegroundColorSpan(Color.parseColor("#ffe00b")), idxChannel, enIdxChannel, Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
+-
+-        return spannable;
+-    }
+-
+-
+-    protected SpannableStringBuilder getCombGiftSpannable(BCItem item, Context context) {
+-        SpannableStringBuilder spannable = new SpannableStringBuilder();
+-        Drawable bcTypeDrawable;
+-        String fromNick = TextUtils.isEmpty(item.fromNick) ? "" : item.fromNick;
+-        if (fromNick.length() > maxNickLength) {
+-            fromNick = fromNick.substring(0, maxNickLength) + "...";
+-        }
+-
+-        String toNick = TextUtils.isEmpty(item.toNick) ? "" : item.toNick;
+-        if (toNick.length() > maxNickLength) {
+-            toNick = toNick.substring(0, maxNickLength) + "...";
+-        }
+-
+-        spannable.append(BCTYPE_PLACE_HOLDER);
+-        spannable.append(fromNick);
+-        spannable.append("  送给  ");
+-        spannable.append(toNick);
+-        spannable.append(GIFT_PLACE_HOLDER);
+-        String giftInfo = item.num + "x" + item.comboNum + "组";
+-        spannable.append(giftInfo);
+-        bcTypeDrawable = ContextCompat.getDrawable(context, R.drawable.ic_danmu_plane);
+-        //设置送礼人的昵称样式
+-        int idxFromNick = spannable.toString().indexOf(fromNick);
+-        int enIdxFromNick = idxFromNick + fromNick.length();
+-        spannable.setSpan(new AbsoluteSizeSpan(13, true), idxFromNick, enIdxFromNick, Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+-        spannable.setSpan(new ForegroundColorSpan(Color.parseColor("#ffffff")), idxFromNick, enIdxFromNick, Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
+-
+-        //设置“送给”的字体样式
+-        int idxSend = enIdxFromNick;
+-        int enIdxSend = idxSend + 4;
+-        spannable.setSpan(new AbsoluteSizeSpan(11, true), idxSend, enIdxSend, Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+-        spannable.setSpan(new ForegroundColorSpan(Color.parseColor("#ffe00b")), idxSend, enIdxSend, Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
+-
+-        //设置收礼人的昵称样式
+-        int idxToNick = spannable.toString().indexOf(toNick);
+-        int enIdxToNick = idxToNick + toNick.length();
+-        spannable.setSpan(new AbsoluteSizeSpan(13, true), idxToNick, enIdxToNick, Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+-        spannable.setSpan(new ForegroundColorSpan(Color.parseColor("#ffffff")), idxToNick, enIdxToNick, Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
+-
+-        //设置礼物信息样式
+-        int idxGiftInfo = spannable.toString().indexOf(giftInfo);
+-        int enIdxGiftInfo = idxGiftInfo + giftInfo.length();
+-        spannable.setSpan(new AbsoluteSizeSpan(13, true), idxGiftInfo, enIdxGiftInfo, Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+-        spannable.setSpan(new ForegroundColorSpan(Color.parseColor("#ffffff")), idxGiftInfo, enIdxGiftInfo, Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
+-
+-        //设置礼物图标Icon
+-        final String giftIconUrl = GiftConfigParser.getInstance().getGiftIconPath(item.type);
+-        int mGiftMessageImageSize = (int) ResolutionUtils.convertDpToPixel(23, context) + 1;
+-        final ImageConfig config = new ImageConfig(mGiftMessageImageSize, mGiftMessageImageSize);
+-        Drawable bitmapDrawable = ImageLoader.getBitmapFromCache(giftIconUrl, config);
+-        if (bitmapDrawable == null) {
+-            ImageLoader.loadBitmap(BasicConfig.getInstance().getAppContext(), giftIconUrl, new ImageLoader.BitmapLoadListener() {
+-                @Override
+-                public void onLoadFailed(Exception e) {
+-
+-                }
+-
+-                @Override
+-                public void onResourceReady(Bitmap bitmap) {
+-                    BitmapDrawable bitmapDrawable = new BitmapDrawable(BasicConfig.getInstance().getAppContext().getResources(), bitmap);
+-                    ImageLoader.addBitmapToCache(giftIconUrl, bitmapDrawable, config);
+-                }
+-            });
+-            bitmapDrawable = context.getResources().getDrawable(R.drawable.lr_ic_default_gift);
+-        }
+-
+-        int idxGiftIcon = spannable.toString().indexOf(GIFT_PLACE_HOLDER);
+-        bitmapDrawable.setBounds(0, 0, mGiftMessageImageSize, mGiftMessageImageSize);
+-        spannable.setSpan(new CustomImageSpan(bitmapDrawable, CustomImageSpan.ALIGN_VERTICAL_CENTER, 0, 0),
+-                idxGiftIcon, idxGiftIcon + GIFT_PLACE_HOLDER.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+-        int idxBcIcon = spannable.toString().indexOf(BCTYPE_PLACE_HOLDER);
+-        if (bcTypeDrawable != null) {
+-            bcTypeDrawable.setBounds(0, 0, imgSize, imgSize);
+-            spannable.setSpan(new CustomImageSpan(bcTypeDrawable, CustomImageSpan.ALIGN_VERTICAL_CENTER, 0, 8),
+-                    idxBcIcon, idxBcIcon + BCTYPE_PLACE_HOLDER.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+-        } else {
+-            spannable.replace(idxBcIcon, idxBcIcon + BCTYPE_PLACE_HOLDER.length(), "");
+-        }
+-        return spannable;
+-    }
+-
+-
+-    private SpannableStringBuilder getRedPacketSpannable(BCItem item, Context context) {
+-        String nick = item.fromNick != null ? item.fromNick : "";
+-        String toNick = item.toNick != null ? item.toNick : "";
+-
+-        if (nick.length() >= 7) {
+-            nick = nick.substring(0, 7) + "...";
+-        }
+-
+-        if (toNick.length() >= 7) {
+-            toNick = toNick.substring(0, 7) + "...";
+-        }
+-
+-        String src = nick + "在" + toNick + "直播间任性狂撒巨额" + "red_packet_flag " + "啦！";
+-
+-        final SpannableStringBuilder sp = new SpannableStringBuilder(src);
+-        final Pattern p1 = Pattern.compile("red_packet_flag");
+-        Matcher m1 = p1.matcher(src);
+-
+-        int width = (int) ResolutionUtils.convertDpToPixel(20f, context);
+-        int height = (int) ResolutionUtils.convertDpToPixel(20f, context);
+-
+-        while (m1.find()) {
+-            BitmapDrawable bd = ImageUtil.getBitmapDrawableFromResource(width, height, R.drawable.red_packet_bg);
+-            bd.setBounds(0, 0, width, height);
+-            CustomImageSpan imageSpan = new CustomImageSpan(bd, CustomImageSpan.ALIGN_VERTICAL_CENTER);
+-            sp.setSpan(imageSpan, m1.start(), m1.end(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+-        }
+-        return sp;
+-    }
+-
+-
+-    /**
+-     * 渲染带有背景的 spannable 文字
+-     *
+-     * @param message
+-     * @param spannable
+-     * @param nickNameColor 名字的颜色
+-     * @param textColor     发言内容的颜色
+-     * @return
+-     */
+-    public Spannable setSpanColorAndBackground(ChannelMessage message,
+-                                               Spannable spannable,
+-                                               @ColorInt int nickNameColor,
+-                                               @ColorInt int textColor) {
+-        if (spannable == null) {
+-            return null;
+-        }
+-        // 名字部分的 spannable
+-        ForegroundColorSpan nameSpan
+-                = new ForegroundColorSpan(nickNameColor);
+-
+-        // 发言部分的 spannable
+-        ForegroundColorSpan textSpan
+-                = new ForegroundColorSpan(textColor);
+-
+-        // 直接铺上发言样式
+-        spannable.setSpan(textSpan, 0, spannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+-
+-        // 查找名字部分，然后覆盖
+-        if (!TextUtils.isEmpty(message.nickname)) {
+-            int idx = spannable.toString().indexOf(message.nickname);
+-            if (idx >= 0 && idx < spannable.length()) {
+-                spannable.setSpan(nameSpan,
+-                        idx,
+-                        idx + message.nickname.length(),
+-                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+-            }
+-        }
+-        return spannable;
+-    }
+-
+-    private void addGunPowder(Spannable span, int priority, int color, int lineNum, long senderUid,
+-                              int backGround, String contend, String pureText, boolean isReplay, boolean isGift, boolean isAir) {
+-        if ((que.size()) > 200) {
+-            stopDanmu();
+-            open(true);
+-        }
+-        DanmuData data = new DanmuData(span, pureText, priority, color, lineNum, senderUid);
+-        data.priority = priority;
+-        data.contend = contend;
+-        data.backGround = backGround;
+-        data.isReplay = isReplay;
+-        data.isGiftMessage = isGift;
+-        data.isAir = isAir;
+-        data.pureText = pureText;
+-        que.add(data);
+-    }
+-
+-
+-    //支持设置弹幕背景样式的方法
+-    private void addGunPowder(Spannable span, int priority, int color, int lineNum, long senderUid,
+-                              int backGround, String contend, String pureText, boolean isReplay, boolean isGift, boolean isAir, Drawable bgDrawable) {
+-        if ((que.size()) > 200) {
+-            stopDanmu();
+-            open(true);
+-        }
+-        DanmuData data = new DanmuData(span, pureText, priority, color, lineNum, senderUid);
+-        data.priority = priority;
+-        data.contend = contend;
+-        data.backGround = backGround;
+-        data.isReplay = isReplay;
+-        data.isGiftMessage = isGift;
+-        data.isAir = isAir;
+-        data.pureText = pureText;
+-        data.bgDrawable = bgDrawable;
+-        que.add(data);
+-    }
+-
+-    private void init(Context context) {
+-        task = new Thread() {
+-            @Override
+-            public void run() {
+-                try {
+-                    while (door.get()) {
+-                        DanmuData tmp;
+-                        tmp = que.take();
+-                        if (tmp != null) {
+-                            BitmapGunPowder tmpPowder;
+-                            tmpPowder = new BitmapGunPowder(tmp.priority, tmp.backGround, tmp.contend,
+-                                    BasicConfig.getInstance().getAppContext(), mDanmuTextView);
+-                            tmpPowder.span = tmp.span;
+-                            tmpPowder.textColor = tmp.textColor;
+-                            tmpPowder.mTextSize = tmp.textSize;
+-                            tmpPowder.senderUid = tmp.senderUid;
+-                            tmpPowder.isReplay = tmp.isReplay;
+-                            tmpPowder.isGiftMessage = tmp.isGiftMessage;
+-                            tmpPowder.isAir = tmp.isAir;
+-                            tmpPowder.pureText = tmp.pureText;
+-                            tmpPowder.bgDrawable = tmp.bgDrawable;
+-
+-                            if (danmuCount.get() >= 80) {
+-                                priorityDanmu.clear();
+-                                normalDanmu.clear();
+-                                myDanmu.clear();
+-                                danmuCount.set(0);
+-                            }
+-                            danmuCount.incrementAndGet();
+-                            addDanmu(tmpPowder);
+-                        }
+-                        Thread.sleep(300);
+-                    }
+-                } catch (InterruptedException e) {
+-                    MLog.info("wangke", "DanMu thread end normal");
+-
+-                } catch (Throwable t) {
+-                    MLog.info("wangke", "DanMu thread end error" + t.toString());
+-                }
+-            }
+-        };
+-        door.set(true);
+-        task.start();
+-    }
+-
+-    private void addDanmu(BitmapGunPowder bitmapGunPowder) {
+-        if (bitmapGunPowder.isme && bitmapGunPowder.p > 10) {
+-            myDanmu.add(bitmapGunPowder);
+-        } else if (bitmapGunPowder.p > 0) {
+-            priorityDanmu.add(bitmapGunPowder);
+-        } else {
+-            normalDanmu.add(bitmapGunPowder);
+-        }
+-    }
+-
+     /**
+      * 没有在getGunPowder回调中判断DanmuOpenStatusType是因为回调过于频繁。
+      * 虽然代码写得难看，但是效率会好些
+@@ -1134,7 +122,7 @@
+                         if (!isDanmuEnabled() || !isOpen() && hashMap == null) {
+                             return;
+                         }
+-                        pushDanmuFromButtomToTop(hashMap);
++                        Emitter.INSTANCE.pushDanmuFromButtomToTop(hashMap);
+                     }
+                 };
+             case DanmuOpenStatusType.TYPE_GAME_TEMPLATE:
+@@ -1145,7 +133,7 @@
+                             return;
+                         }
+                         // 游戏模版需要更多的弹幕输出
+-                        pushDanmuForGameTemplate(hashMap);
++                        Emitter.INSTANCE.pushDanmuForGameTemplate(hashMap);
+                     }
+                 };
+             case DanmuOpenStatusType.TYPE_ENTERTAINMENT:
+@@ -1158,206 +146,34 @@
+                         }
+                         if (ICoreManagerBase.getCore(IInvincibleDanmuCore.class) != null
+                                 && ICoreManagerBase.getCore(IInvincibleDanmuCore.class).isOpenLandscapeInvincibleDanmu()) { //横屏跑骚无敌弹幕
+-                            pushInvincibleDanmu(hashMap);
++                            Emitter.INSTANCE.pushInvincibleDanmu(hashMap);
+                         } else {
+-                            pushDanmu(hashMap);
++                            Emitter.INSTANCE.pushDanmu(hashMap);
+                         }
+                     }
+                 };
+         }
+     }
+ 
+-
+-    private void pushDanmu(HashMap<Integer, Boolean> map) {
+-        synchronized (danmuCount) {
+-            if (door.get()) {
+-                for (int i = map.size() - 1; i >= 0; i--) {
+-                    if (map.get(i)) {
+-                        BitmapGunPowder tmp = null;
+-                        if (i == map.size() - 1) {
+-                            if (myDanmu.size() != 0) {
+-                                tmp = myDanmu.poll();
+-                            } else if (priorityDanmu.size() != 0) {
+-                                tmp = priorityDanmu.poll();
+-                            } else {
+-                                tmp = normalDanmu.poll();
+-                            }
+-                        } else {
+-                            tmp = normalDanmu.poll();
+-                        }
+-                        if (tmp != null) {
+-                            tmp.convert(isSurfaceView());
+-                            if (tmp.bitmap != null && mDanmuView != null && mDanmuView.get() != null) {
+-                                mDanmuView.get().sendGunPower(tmp, i);
+-                            }
+-                            danmuCount.decrementAndGet();
+-                        }
+-                    }
+-                }
++    public void checkTask() {
++        Emitter.INSTANCE.checkTask();
++    }
+ 
+-            }
++    public IDanmukuView getDanmuView() {
++        return Emitter.INSTANCE.getDanmuView();
++    }
+ 
+-        }
+-    }
+-
+-    private void pushDanmuFromButtomToTop(HashMap<Integer, Boolean> map) {
+-        synchronized (danmuCount) {
+-            if (door.get()) {
+-                for (int i = map.size() - 1; i >= 0; i--) {
+-                    if (map.get(i)) {
+-                        BitmapGunPowder tmp = null;
+-                        if (myDanmu.size() != 0) {
+-                            tmp = myDanmu.poll();
+-                        } else if (priorityDanmu.size() != 0) {
+-                            tmp = priorityDanmu.poll();
+-                        } else {
+-                            tmp = normalDanmu.poll();
+-                        }
+-                        if (tmp != null) {
+-                            tmp.convert(isSurfaceView());
+-                            if (tmp.bitmap != null && mDanmuView != null && mDanmuView.get() != null) {
+-                                mDanmuView.get().sendGunPower(tmp, i);
+-                            }
+-                            danmuCount.decrementAndGet();
+-                        }
+-                    }
+-                }
+-            }
+-        }
+-    }
+-
+-    private void pushDanmuForGameTemplate(HashMap<Integer, Boolean> map) {
+-        synchronized (danmuCount) {
+-            if (door.get()) {
+-                for (int i = map.size() - 1; i >= 0; i--) {
+-                    if (map.get(i) && isValidPosition(i)) {
+-                        BitmapGunPowder tmp = null;
+-                        if (myDanmu.size() != 0) {
+-                            tmp = myDanmu.poll();
+-                        } else if (priorityDanmu.size() != 0) {
+-                            tmp = priorityDanmu.poll();
+-                        } else {
+-                            tmp = normalDanmu.poll();
+-                        }
+-                        if (tmp != null) {
+-                            tmp.convert(isSurfaceView());
+-                            if (tmp.bitmap != null && mDanmuView != null && mDanmuView.get() != null) {
+-                                mDanmuView.get().sendGunPower(tmp, i);
+-                            }
+-                            danmuCount.decrementAndGet();
+-                        }
+-                    }
+-                }
+-            }
+-        }
+-    }
+-
+-    private void pushInvincibleDanmu(HashMap<Integer, Boolean> map) {
+-        if (door.get()) {
+-            for (int i = map.size() - 1; i >= 0; i--) {
+-                if (map.get(i)) {
+-                    if (i == map.size() - 1 && i != 0) {
+-                        synchronized (danmuCount) {
+-                            BitmapGunPowder tmp = null;
+-                            if (myDanmu.size() != 0) {
+-                                tmp = myDanmu.poll();
+-                            } else if (priorityDanmu.size() != 0) {
+-                                tmp = priorityDanmu.poll();
+-                            } else {
+-                                tmp = normalDanmu.poll();
+-                            }
+-                            if (tmp != null) {
+-                                tmp.convert(isSurfaceView());
+-                                if (tmp.bitmap != null && mDanmuView != null && mDanmuView.get() != null) {
+-                                    mDanmuView.get().sendGunPower(tmp, i);
+-                                }
+-                                danmuCount.decrementAndGet();
+-                            }
+-                        }
+-                    } else {
+-                        InvincibleDanmuInfo info = ICoreManagerBase.getCore(IInvincibleDanmuCore.class).pollInvincibleDanmu();
+-                        if (info != null) {
+-                            info.createPowertoShell(null);
+-                            if (info.bitmap != null && mDanmuView != null && mDanmuView.get() != null) {
+-                                mDanmuView.get().sendGunPower(info, i);
+-                            }
+-                        }
+-                    }
+-
+-                }
+-            }
+-
+-        }
+-    }
+-
+-    public void setCurrentPosition(DanMuPosition mCurrentPosition) {
+-        this.mCurrentPosition = mCurrentPosition;
+-    }
+-
+-    private DanMuPosition mCurrentPosition = GameTemplateLandscapeConfig.getInstance().getDanMuPosition();
+-
+-    protected boolean isValidPosition(int i) {
+-        switch (mCurrentPosition) {
+-            case TOP:
+-                if (i >= 0 && i <= 2) {
+-                    return true;
+-                }
+-                break;
+-            case BOTTOM:
+-                if (i >= 5 && i <= 7) {
+-                    return true;
+-                }
+-                break;
+-            default:
+-                return true;
+-        }
+-        return false;
+-    }
+-
+-    protected void updateShaderMatrix(BitmapShader bitmapShader, int bitmapWidth, int bitmapHeight, Rect drawableRect) {
+-        float scale;
+-        float dx = 0;
+-        float dy = 0;
+-
+-        Matrix mShaderMatrix = new Matrix();
+-        mShaderMatrix.set(null);
+-
+-        if (bitmapWidth * drawableRect.height() > drawableRect.width() * bitmapHeight) {
+-            scale = drawableRect.height() / (float) bitmapHeight;
+-            dx = (drawableRect.width() - bitmapWidth * scale) * 0.5f;
+-        } else {
+-            scale = drawableRect.width() / (float) bitmapWidth;
+-            dy = (drawableRect.height() - bitmapHeight * scale) * 0.5f;
+-        }
+-
+-        mShaderMatrix.setScale(scale, scale);
+-        mShaderMatrix.postTranslate((int) (dx + 0.5f) + 2, (int) (dy + 0.5f) + 2);
+-
+-        bitmapShader.setLocalMatrix(mShaderMatrix);
+-    }
+-
+-    public void stopDanmu() {
+-        danmuCount = new AtomicInteger();
+-        door.set(false);
+-        if (task != null) {
+-            task.interrupt();
+-        }
+-        task = null;
+-        que.clear();
+-        priorityDanmu.clear();
+-        normalDanmu.clear();
+-        myDanmu.clear();
+-        openStatus = false;
+-        MLog.info("DanMuUtil", "stopDanMu");
++    public void setDanmuView(IDanmukuView danmuView) {
++        Emitter.INSTANCE.setDanmuView(danmuView);
+     }
+ 
+     public void open(boolean open) {
+-        openStatus = open;
++        Emitter.INSTANCE.open(open);
+         MLog.info("DanMuUtil", "isOpen=" + open);
+     }
+ 
+     public boolean isOpen() {
+-        return openStatus;
++        return Emitter.INSTANCE.isOpen();
+     }
+ 
+     public boolean isDanmuEnabled() {
+@@ -1374,7 +190,6 @@
+         MLog.info("DanMuUtil", "setDanmuEnabled DanmuEnabled:" + mDanmuEnabled);
+     }
+ 
+-
+     private boolean isDanmuEnabledFromPreference() {
+         return CommonPref.instance().getBoolean(getDanmu_enabledString(), true);
+     }
+@@ -1394,4 +209,11 @@
+         mDanmuEnabled = enable;
+         MLog.info("DanMuUtil", "setDanmuEnabledWithoutStoreState DanmuEnabled:" + mDanmuEnabled);
+     }
++
++    public void clear() {
++        Emitter.INSTANCE.clear();
++        if (MLog.isLogLevelAboveDebug()) {
++            MLog.debug(TAG, " clearPublicChatMedal ");
++        }
++    }
+ }
+Index: plugin_ent_live_client/src/com/yy/live/module/giftdanmu/dataparser/DanmuParserImpl.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- plugin_ent_live_client/src/com/yy/live/module/giftdanmu/dataparser/DanmuParserImpl.java	(date 1538203343659)
++++ plugin_ent_live_client/src/com/yy/live/module/giftdanmu/dataparser/DanmuParserImpl.java	(date 1538203343659)
+@@ -0,0 +1,653 @@
++package com.yy.live.module.giftdanmu.dataparser;
++
++import android.content.Context;
++import android.graphics.Bitmap;
++import android.graphics.Color;
++import android.graphics.drawable.BitmapDrawable;
++import android.graphics.drawable.Drawable;
++import android.support.annotation.ColorInt;
++import android.support.v4.content.ContextCompat;
++import android.text.Spannable;
++import android.text.SpannableStringBuilder;
++import android.text.TextUtils;
++import android.text.style.AbsoluteSizeSpan;
++import android.text.style.ForegroundColorSpan;
++
++import com.duowan.mobile.entlive.R;
++import com.yy.game.gametemplate.GameTemplateDanMuFilter;
++import com.yy.live.module.giftdanmu.DanmuTextManager;
++import com.yy.live.module.giftdanmu.LiveDanMuUtil;
++import com.yy.live.module.giftdanmu.filter.FlowerChinneFilter;
++import com.yy.live.module.giftdanmu.filter.GiftFilter;
++import com.yy.live.module.giftdanmu.filter.PublicChatBroadcastFilter;
++import com.yy.live.module.giftdanmu.model.DanMuMedalParseManage;
++import com.yy.live.module.giftdanmu.newdanmu.Emitter;
++import com.yy.live.module.giftdanmu.newdanmu.StorePool;
++import com.yy.live.module.noble.EntIdentityIconSet;
++import com.yy.live.module.pk.ChannelPkMvpChannelMsg;
++import com.yy.mobile.bizmodel.login.LoginUtil;
++import com.yy.mobile.config.BasicConfig;
++import com.yy.mobile.image.ImageConfig;
++import com.yy.mobile.imageloader.ImageLoader;
++import com.yy.mobile.richtext.ChannelTicketFilter;
++import com.yy.mobile.richtext.EmoticonFilter;
++import com.yy.mobile.richtext.RichTextManager;
++import com.yy.mobile.richtext.YGroupTicketFilter;
++import com.yy.mobile.ui.basicfunction.danmu.filter.DanMuCommentFilter;
++import com.yy.mobile.ui.basicgunview.danmucanvas.Bean.BitmapGunPowder;
++import com.yy.mobile.ui.basicgunview.danmucanvas.Bean.DanmuData;
++import com.yy.mobile.ui.gift.message.ArGiftUpgradeMessage;
++import com.yy.mobile.ui.publicchat.top.PublicChatBroadcastMessage;
++import com.yy.mobile.ui.swivelChair.TurnChairMessage;
++import com.yy.mobile.ui.turntable.info.TurnTableTurMessage;
++import com.yy.mobile.ui.widget.CustomImageSpan;
++import com.yy.mobile.util.ResolutionUtils;
++import com.yy.mobile.util.StringUtils;
++import com.yy.mobile.util.log.MLog;
++import com.yymobile.core.cavalier.TaskMessage;
++import com.yymobile.core.channel.ChannelMessage;
++import com.yymobile.core.flower.FlowerChinneMessage;
++import com.yymobile.core.gift.GiftChannelMessage;
++import com.yymobile.core.gift.GiftConfigParser;
++import com.yymobile.core.medal.MedalCenter;
++import com.yymobile.core.messagequeue.BCItem;
++import com.yymobile.core.noble.NobleChannelMessage;
++import com.yymobile.core.noble.NobleHonorChangeWithoutGiftMessage;
++import com.yymobile.core.noble.NobleLevelUpgradeChannelMessage;
++import com.yymobile.core.noble.NobleTalkChannelMessage;
++import com.yymobile.core.truelove.TrueLoveMessage;
++import com.yymobile.liveapi.plugincenter.PluginPublicMessage;
++
++import org.jetbrains.annotations.NotNull;
++
++import java.util.ArrayList;
++import java.util.Arrays;
++import java.util.HashSet;
++import java.util.List;
++import java.util.Map;
++
++public class DanmuParserImpl implements IDanmuParser {
++    private static final String TAG = "DanmuParserImpl";
++    private List<RichTextManager.Feature> features;
++    private Context context;
++    private int nickLength = 7;
++    private static volatile DanMuMedalParseManage mParseManage;
++    private HashSet<String> emotionMap;
++
++    public DanmuParserImpl(Context context) {
++        this.context = context;
++        features = new ArrayList<RichTextManager.Feature>();
++        features.add(RichTextManager.Feature.CHANNELAIRTICKET);
++        features.add(RichTextManager.Feature.EMOTICON);
++        // features.add(RichTextManager.Feature.GROUPTICKET);
++        features.add(RichTextManager.Feature.NOBLEGIFEMOTION);
++        emotionMap = new HashSet<String>(500);
++
++        emotionMap.addAll(Arrays.asList(EmoticonFilter.getAllSmileCodes()));
++    }
++
++    @Override
++    public boolean intercept(@NotNull ChannelMessage message) {
++        return false;
++    }
++
++    private DanmuData addDanMuData(Spannable spannable, DanmuData danmuData) {
++        return addGunPowder(spannable, danmuData.priority, danmuData.textColor, danmuData.lineNum, danmuData.senderUid, danmuData.backGround,
++                danmuData.contend, danmuData.pureText, danmuData.isReplay, danmuData.isGiftMessage, danmuData.isAir);
++    }
++
++    public void clear() {
++        mParseManage = null;
++        if (MLog.isLogLevelAboveDebug()) {
++            MLog.debug(TAG, " clearPublicChatMedal ");
++        }
++    }
++
++    @NotNull
++    @Override
++    public DanmuData parser(@NotNull final ChannelMessage message) {
++
++        if (message.spannable != null) {
++            return parseSpannableMessage(message);
++        }
++
++        Spannable spannable;
++        MLog.debug(TAG, "channelMessage: %s", message);
++        if (GameTemplateDanMuFilter.getInstance().intercept(message)) {
++            spannable = GameTemplateDanMuFilter.getInstance().getSpannable(context, message, features);
++            if (spannable != null) {
++                return addGunPowder(spannable, 100, Color.parseColor(ChannelMessage.chatMessageColor), 0, message.uid, -1, "",
++                        message.pureText, message.isReplay, false, false);
++            }
++
++        } else if (DanMuCommentFilter.INSTANCE.interceptAnchorLiveFilter(message)) {      //再仿照GameTemplateDanMuFilter来，如果超过3个后再优化
++            spannable = DanMuCommentFilter.INSTANCE.getSpannable(context, message, features);
++            if (spannable != null) {
++                return addGunPowder(spannable, 100, Color.parseColor(ChannelMessage.chatMessageColor), 0, message.uid, -1, "",
++                        message.pureText, message.isReplay, false, false);
++            }
++        } else if (message instanceof GiftChannelMessage) { //付费礼物
++            if (LiveDanMuUtil.isInUnNeedSubcribeList(LiveDanMuUtil.unSubscribeRunningWaterGiftType)
++                    && ((GiftChannelMessage) message).type != GiftChannelMessage.GiftType.ComboGift) {
++                return null;
++            }
++            if (message.isReplay && message.nickname != null) { // 回播送礼流水 message.text 并未拼接入昵称
++                String nickName = message.nickname;
++                if (nickName.length() > nickLength) {
++                    nickName = nickName.substring(0, nickLength);
++                }
++                if (!StringUtils.isNullOrEmpty(nickName) && !message.text.contains(nickName)) {
++                    message.text = nickName + " " + message.text;
++                }
++            }
++            int mGiftMessageImageSize = (int) ResolutionUtils.convertDpToPixel(23, context) + 1;
++            int type = ((GiftChannelMessage) message).giftTypeId;
++            final String giftIconUrl = GiftConfigParser.getInstance().getGiftIconPath(type);
++            final ImageConfig config = new ImageConfig(mGiftMessageImageSize, mGiftMessageImageSize);
++            BitmapDrawable giftDrawable = ImageLoader.getBitmapFromCache(giftIconUrl, config);
++            if (giftIconUrl != null && giftDrawable == null) {
++                ImageLoader.loadBitmap(BasicConfig.getInstance().getAppContext(), giftIconUrl, new ImageLoader.BitmapLoadListener() {
++                    @Override
++                    public void onLoadFailed(Exception e) {
++
++                    }
++
++                    @Override
++                    public void onResourceReady(Bitmap bitmap) {
++                        BitmapDrawable bitmapDrawable = new BitmapDrawable(BasicConfig.getInstance().getAppContext().getResources(), bitmap);
++                        ImageLoader.addBitmapToCache(giftIconUrl, bitmapDrawable, config);
++                        initGift((GiftChannelMessage) message, context);
++                    }
++                });
++                //return;  这里return会导致第一个弹幕是礼物不会立即显示的BUG，先注释，如有问题联系：909075276
++            } else {
++                initGift((GiftChannelMessage) message, context);
++            }
++        } else if (message instanceof NobleChannelMessage) {
++            // 旧版贵族喊话
++            String tmp = message.nickname + "：" + message.text;
++            spannable = DanmuTextManager.getSpannableString(context, tmp, features);
++            spannable = addMentel(message, spannable, context);
++            spannable = setSpanColor(message, spannable, Color.parseColor(ChannelMessage.nickColor), Color.parseColor(ChannelMessage.giftTxtColor));
++            if (!MedalCenter.getInstance().isActMedal()) {
++                return addGunPowder(spannable, 2, Color.parseColor(ChannelMessage.giftTxtColor), 0, message.uid, -1, "", message.pureText, message.isReplay, false, false);
++            }
++        } else if (message instanceof NobleTalkChannelMessage) {
++            // 新版贵族喊话
++            String tmp = message.nickname + "：" + message.text;
++            spannable = DanmuTextManager.getSpannableString(context, tmp, features);
++            spannable = addMentel(message, spannable, context);
++            spannable = setSpanColorAndBackground(message,
++                    spannable,
++                    context.getResources().getColor(R.color.treehole_name),
++                    context.getResources().getColor(R.color.common_color_11_live));
++            if (!MedalCenter.getInstance().isActMedal()) {
++                return addGunPowder(spannable, 2, Color.parseColor(ChannelMessage.giftTxtColor), 0, message.uid, -1, "", message.pureText, message.isReplay, false, false, ContextCompat.getDrawable(context, R.drawable.live_noble_talk_channel_message_text_bg));
++            }
++        } else if (message instanceof PublicChatBroadcastMessage) { //中小飞机礼物、送热气球 弹幕插入
++            BCItem bcItem = (BCItem) ((PublicChatBroadcastMessage) message).mChatBCWrapper.getInnerEntity();
++            if (bcItem == null) {
++                return null;
++            }
++            //拼接弹幕的Spannable内容
++            spannable = PublicChatBroadcastFilter.INSTANCE.getBroadCastDanMuSpannable(context, bcItem);
++            Drawable drawable;
++            if (bcItem.bcType == 0) { //0:礼物
++                //背景设置红色drawable样式
++                drawable = ContextCompat.getDrawable(context, R.drawable.live_danmu_broadcast_plane_gift_bg);
++            } else if (bcItem.bcType == 1) { //1：热气球
++                //背景设置蓝色drawable样式
++                drawable = ContextCompat.getDrawable(context, R.drawable.live_danmu_broadcast_hotball_gift_bg);
++            } else {
++                //背景设置黄色drawable样式
++                drawable = ContextCompat.getDrawable(context, R.drawable.live_danmu_broadcast_orange_bg);
++            }
++            return addGunPowder(spannable, 0, Color.parseColor(ChannelMessage.chatMessageColor), 0,
++                    message.uid, -1, "", message.pureText, message.isReplay, false, false, drawable);
++        } else if (message instanceof FlowerChinneMessage) {
++            spannable = FlowerChinneFilter.INSTANCE.onAppendFlowerChinneMessage(context, (FlowerChinneMessage) message);
++            spannable = addMentel(message, spannable, context);
++            spannable = setSpanColor(message, spannable, Color.parseColor(ChannelMessage.nickColor), Color.parseColor(ChannelMessage.nickColor));
++            if (!MedalCenter.getInstance().isActMedal()) {
++                // 送花跟送一一样加背景
++                return addGunPowder(spannable, 2, Color.parseColor(ChannelMessage.nickColor), 0, message.uid, -1, "", message.pureText, message.isReplay, true, false);
++            }
++        } else if (message instanceof NobleLevelUpgradeChannelMessage) { //贵族等级晋升消息
++            spannable = onAppendNobleLevelUpgradeChannelMessage(context, (NobleLevelUpgradeChannelMessage) message);
++            spannable = setSpanColor(message, spannable, Color.parseColor(ChannelMessage.nickColor), Color.parseColor(ChannelMessage.giftTxtColor));
++            if (!MedalCenter.getInstance().isActMedal()) {
++                return addGunPowder(spannable, 3, Color.parseColor(ChannelMessage.giftTxtColor), 0, message.uid, -1, "", message.pureText, message.isReplay, false, false);
++            }
++        } else if (message instanceof NobleHonorChangeWithoutGiftMessage) { //荣耀值增加信息
++            NobleHonorChangeWithoutGiftMessage nobleHonorChangeWithoutGiftMessage = (NobleHonorChangeWithoutGiftMessage) message;
++            String source = nobleHonorChangeWithoutGiftMessage.source.equals("PC") ? "PC" : "手机端";
++            switch (nobleHonorChangeWithoutGiftMessage.messageType) {
++                case 1:
++                    nobleHonorChangeWithoutGiftMessage.text = "今天首次" + source + "登录，涨荣耀值" + nobleHonorChangeWithoutGiftMessage.increaseHonor;
++                    break;
++                case 2:
++                    nobleHonorChangeWithoutGiftMessage.text = "今天首次" + source + "送礼，涨荣耀值" + nobleHonorChangeWithoutGiftMessage.increaseHonor;
++                    break;
++                case 5:
++                    nobleHonorChangeWithoutGiftMessage.text = "累计登录" + nobleHonorChangeWithoutGiftMessage.logionDaySum + "天，今天首次" + source + "登录，涨荣耀值" + nobleHonorChangeWithoutGiftMessage.increaseHonor;
++                    break;
++                case 6: {
++                    if (nobleHonorChangeWithoutGiftMessage.bigpayMonth <= 0 && nobleHonorChangeWithoutGiftMessage.allMoney > 0) {
++                        nobleHonorChangeWithoutGiftMessage.text = "消费额" + nobleHonorChangeWithoutGiftMessage.allMoney + "，今天首次" + source + "送礼，涨荣耀值" + nobleHonorChangeWithoutGiftMessage.increaseHonor;
++                    } else if (nobleHonorChangeWithoutGiftMessage.bigpayMonth > 0) {
++                        nobleHonorChangeWithoutGiftMessage.text = "今天首次" + source + "送礼，涨荣耀值" + nobleHonorChangeWithoutGiftMessage.increaseHonor;
++                    }
++                    break;
++                }
++                default:
++            }
++            nobleHonorChangeWithoutGiftMessage.text = "noble" + nobleHonorChangeWithoutGiftMessage.nickname + " " + nobleHonorChangeWithoutGiftMessage.text;
++            //MLog.debug("", "wangke" + nobleHonorChangeWithoutGiftMessage.toString());
++
++            spannable = RichTextManager.getInstance().getSpannableString(context, nobleHonorChangeWithoutGiftMessage.text, features);
++            int start = nobleHonorChangeWithoutGiftMessage.text.indexOf("荣耀值");
++            if (start >= 0) {
++                Drawable nobleDrawable = context.getResources().getDrawable(R.drawable.ic_nobel_honor);
++                nobleDrawable.setBounds(0, 0, nobleDrawable.getIntrinsicWidth(), nobleDrawable.getIntrinsicHeight());
++                spannable.setSpan(new CustomImageSpan(nobleDrawable, CustomImageSpan.ALIGN_VERTICAL_CENTER), start, start + 3, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
++            }
++            Drawable nobleDrawable = getFixedSizedNobleImage(EntIdentityIconSet.getIconResId(nobleHonorChangeWithoutGiftMessage.nobleLevel),
++                    ChannelMessage.MEDAL_ICON_SIZE_DP, ChannelMessage.MEDAL_ICON_SIZE_DP, context);
++            if (nobleDrawable != null) {
++                nobleDrawable.setBounds(0, 0, nobleDrawable.getIntrinsicWidth(), nobleDrawable.getIntrinsicHeight());
++            }
++            spannable.setSpan(new CustomImageSpan(nobleDrawable, CustomImageSpan.ALIGN_VERTICAL_CENTER, 0, ResolutionUtils.convertDpToPixel(6, context)),
++                    0, "noble".length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
++            spannable = setSpanColor(message, spannable, Color.parseColor(ChannelMessage.nickColor), Color.parseColor(ChannelMessage.giftTxtColor));
++            if (!MedalCenter.getInstance().isActMedal()) { //插入弹幕
++                StorePool.INSTANCE.add(new DanmuData(spannable, message.pureText, 3, message.uid, message.isReplay));
++            }
++        } else if (message instanceof TurnTableTurMessage) {
++            Map<String, String> map = ((TurnTableTurMessage) message).map;
++            String name = map.get("name");
++            String num = map.get("red_num");
++            String ss = map.get("desc");
++            String channel = map.get("ch_id");
++            String left = map.get("left");
++            // Log.w("wangke3","     " +3+"type"+"  "+ss);
++            if (ss == null || ss.length() == 0) {
++                return null;
++            }
++            StringBuilder sb = new StringBuilder(ss);
++            sb.insert(0, "image");
++            int i1 = sb.lastIndexOf("[num]");
++            int i2 = sb.lastIndexOf("[name]");
++            int i3 = sb.lastIndexOf("[short_chId]");
++            int i4 = sb.lastIndexOf("left");
++            if (i1 > 0) {
++                sb.replace(i1, i1 + "[num]".length(), num);
++            }
++            if (i2 > 0) {
++                if (name.length() >= 12) {
++                    name = name.substring(0, 12) + "...";
++                }
++                i2 = sb.lastIndexOf("[name]");
++                sb.replace(i2, i2 + "[name]".length(), name);
++            }
++            if (i3 > 0) {
++                i3 = sb.lastIndexOf("[short_chId]");
++                sb.replace(i3, i3 + "[short_chId]".length(), channel);
++            }
++            if (i4 > 0) {
++                i4 = sb.lastIndexOf("left");
++                sb.replace(i4, i4 + "left".length(), left);
++            }
++            Spannable sp = DanmuTextManager.getSpannableString(context, sb, features);
++            Drawable drawable = context.getResources().getDrawable(R.drawable.turntable_toutiao);
++            drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
++            CustomImageSpan imageSpan = new CustomImageSpan(drawable, CustomImageSpan.ALIGN_VERTICAL_CENTER, 0, ResolutionUtils.convertDpToPixel(6, context));
++            sp.setSpan(imageSpan, 0, "image".length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
++            sp = setSpanColor(message, sp, Color.parseColor(ChannelMessage.nickColor), Color.parseColor(ChannelMessage.giftTxtColor));
++            if (!MedalCenter.getInstance().isActMedal()) {
++                return addGunPowder(sp, 0, Color.parseColor(ChannelMessage.giftTxtColor), 0,
++                        message.uid, -1, sb.toString(), message.pureText,
++                        message.isReplay, false, false);
++            }
++        } else if (message.channel_message_type.equals(ChannelMessage.ChannelMsgType.SHARE_MESSAGE_TYPE) || message.channel_message_type.equals(ChannelMessage.ChannelMsgType.SUBSCRIBE_MESSAGE_TYPE)) {
++            message.text = message.nickname + " " + message.text;
++            spannable = new SpannableStringBuilder(message.text);
++            spannable = addMentel(message, spannable, context);
++            spannable = setSpanColor(message, spannable, Color.parseColor(ChannelMessage.nickColor), Color.parseColor(ChannelMessage.nickColor));
++            if (!MedalCenter.getInstance().isActMedal()) {
++                return addGunPowder(spannable, 0, Color.parseColor(ChannelMessage.nickColor), 0,
++                        message.uid, -1, spannable.toString(), message.pureText,
++                        message.isReplay, false, false);
++            }
++        } else if (message instanceof TurnChairMessage) { //转椅消息
++            spannable = new SpannableStringBuilder(message.text);
++            spannable.setSpan(new ForegroundColorSpan(Color.parseColor(ChannelMessage.giftTxtColor)), 0, message.text.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
++            if (!MedalCenter.getInstance().isActMedal()) {
++                return addGunPowder(spannable, 0, Color.parseColor(ChannelMessage.giftTxtColor), 0,
++                        message.uid, -1, spannable.toString(), message.pureText,
++                        message.isReplay, false, false);
++            }
++        } else if (message instanceof ChannelPkMvpChannelMsg) {
++            String text = message.nickname + "成功抢夺坐席";
++            spannable = new SpannableStringBuilder(text);
++            spannable = setSpanColor(message, spannable, Color.parseColor(ChannelMessage.nickColor), Color.parseColor(ChannelMessage.chatMessageColor));
++            return addGunPowder(spannable, 0, Color.parseColor(ChannelMessage.nickColor), 0, message.uid, -1, "", message.pureText, message.isReplay, true, false);
++        } else {
++            // 狼人杀 app 竖屏跑马灯中的流水信息在横屏弹幕中都屏蔽掉 任务体系流水信息，插件中心流水信息，Ar礼物， 珍爱团升级信息
++            if (((message instanceof TaskMessage) || (message instanceof PluginPublicMessage)
++                    || (message instanceof ArGiftUpgradeMessage) || (message instanceof TrueLoveMessage))) {
++                return null;
++            }
++            if (!((message instanceof TaskMessage) || (message instanceof PluginPublicMessage)
++                    || (message instanceof ArGiftUpgradeMessage) || (message instanceof TrueLoveMessage))) {
++                message.pureText = message.text;    //只有默认文案做长按点击
++            }
++
++            if (message.spannable != null) { //插入弹幕消息
++                DanmuData data = new DanmuData(message.spannable, message.pureText, 0, -1, message.isReplay);
++                data.backGround = -1;
++                return data;
++            }
++            boolean isAir = false;
++            if (message.nickname != null) {
++                if (message.nickname.length() > nickLength) {
++                    message.nickname = message.nickname.substring(0, nickLength);
++                }
++            }
++            if (message.nickname != null) {
++                message.text = message.nickname + " " + message.text;
++            }
++            spannable = new SpannableStringBuilder("a");
++            ((SpannableStringBuilder) spannable).append(message.nickname).append(" ").append(message.text);
++            if (!TextUtils.isEmpty(message.text)) {
++                if (message.text != null) {
++                    if (YGroupTicketFilter.isYGroupTicketMessage(message.text)) {
++                        return null;
++                    }
++                    // 狼人杀 app 不解析飞机票
++                    if (ChannelTicketFilter.isChannelTicketMessage(message.text)) {
++                        spannable = DanmuTextManager.getSpannableString(context, message.text, features);
++                        isAir = true;
++                    } else {
++                        if (message.text.length() > 30) {
++                            String tmp = message.text;
++                            int count = 0;
++                            int i = 0;
++                            for (; i < tmp.length() - 5; i++) {
++                                if (count >= 20) {
++                                    tmp = tmp.substring(0, i);
++                                    break;
++                                }
++
++                                if (tmp.charAt(i) == '/') {
++                                    String s = tmp.substring(i, i + 4);
++                                    if (emotionMap.contains(s)) {
++                                        i = i + 3;
++                                        count = count + 1;
++                                    } else {
++                                        s = tmp.substring(i, i + 5);
++                                        if (emotionMap.contains(s)) {
++                                            i = i + 4;
++                                            count = count + 1;
++                                        }
++                                    }
++                                } else {
++                                    count = count + 1;
++                                }
++                            }
++                            if (count < 20) {
++                                tmp = tmp.substring(0, i);
++                            }
++
++                            message.text = tmp + "...";
++                        }
++                        spannable = DanmuTextManager.getSpannableString(context, message.text, features);
++                    }
++                }
++            }
++
++            if (isAir) {
++                spannable = addMentel(message, spannable, context);
++                spannable = setSpanColor(message, spannable, Color.parseColor(ChannelMessage.nickColor), Color.parseColor(ChannelMessage.nickColor));
++                return addGunPowder(spannable, 0, Color.parseColor(ChannelMessage.nickColor), 0, message.uid, -1,
++                        message.text, message.pureText, message.isReplay, false, isAir);
++            } else {
++                spannable = addMentel(message, spannable, context);
++                if (!MedalCenter.getInstance().isActMedal()) {
++                    if (LoginUtil.getUid() != message.uid) {
++                        if (message.channel_message_type.equals(ChannelMessage.ChannelMsgType.TURE_LOVE_TYPE)) {
++                            spannable = setSpanColor(message, spannable, Color.parseColor(ChannelMessage.nickColor), Color.parseColor(ChannelMessage.giftTxtColor));
++                            return addGunPowder(spannable, 3, Color.parseColor(ChannelMessage.giftTxtColor), 0, message.uid, -1, "", message.pureText, message.isReplay, false, false);
++                        } else {
++                            spannable = setSpanColor(message, spannable, Color.parseColor(ChannelMessage.nickColor), Color.parseColor(ChannelMessage.chatMessageColor));
++                            return addGunPowder(spannable, 0, Color.parseColor(ChannelMessage.chatMessageColor), 0,
++                                    message.uid, -1, "", message.pureText, message.isReplay, false, false);
++                        }
++                    } else {
++                        //bug id ANDROIDYY-27346 登录用户发言字体颜色是橙色
++                        spannable = setSpanColor(message, spannable, Color.parseColor(ChannelMessage.nickColor), Color.parseColor(ChannelMessage.nickColor));
++                        return addGunPowder(spannable, 100, Color.parseColor(ChannelMessage.chatMessageColor), 0,
++                                message.uid, -1, "", message.pureText, message.isReplay, false, false);
++                    }
++                }
++            }
++
++        }
++
++        return null;
++    }
++
++    private DanmuData parseSpannableMessage(ChannelMessage message) {
++        Spannable spannable;
++        if (message.spannable == null) {
++            if (message.text == null) {
++                return null;
++            } else {
++                spannable = new SpannableStringBuilder(message.text);
++            }
++        } else {
++            spannable = message.spannable;
++        }
++
++        try {
++            if (DanMuCommentFilter.INSTANCE.interceptAnchorLiveFilter(message)) {      //再仿照GameTemplateDanMuFilter来，如果超过3个后再优化
++                spannable = DanMuCommentFilter.INSTANCE.getSpannable(context, message, features);
++                if (spannable != null) {
++                    return addGunPowder(spannable, 100, Color.parseColor(ChannelMessage.chatMessageColor), 0, message.uid, -1,
++                            DanMuCommentFilter.INSTANCE.isNormalPeople(message) + "", message.pureText, message.isReplay, false, false);
++                }
++            } else if (message instanceof GiftChannelMessage) { //付费礼物
++                return addGunPowder(spannable, 2, Color.parseColor(ChannelMessage.giftTxtColor), 0, message.uid, -1, "", message.pureText, message.isReplay, true, false);
++            } else if (message instanceof NobleChannelMessage) { //TODO 贵族喊话消息
++                return addGunPowder(spannable, 2, Color.parseColor(ChannelMessage.giftTxtColor), 0, message.uid, -1, "", message.pureText, message.isReplay, false, false);
++            } else if (message instanceof FlowerChinneMessage) {
++                return addGunPowder(spannable, 2, Color.parseColor(ChannelMessage.nickColor), 0, message.uid, -1, "", message.pureText, message.isReplay, true, false);
++            } else if (message instanceof NobleLevelUpgradeChannelMessage) { //贵族等级晋升消息
++                return addGunPowder(spannable, 3, Color.parseColor(ChannelMessage.giftTxtColor), 0, message.uid, -1, "", message.pureText, message.isReplay, false, false);
++            } else if (message instanceof NobleHonorChangeWithoutGiftMessage) { //荣耀值增加信息
++                return addDanMuData(spannable, new DanmuData(spannable, message.pureText, 3, message.uid, message.isReplay));
++            } else if (message instanceof TurnTableTurMessage) {
++                return addGunPowder(spannable, 0, Color.parseColor(ChannelMessage.giftTxtColor), 0,
++                        message.uid, -1, spannable.toString(), message.pureText,
++                        message.isReplay, false, false);
++            } else if (message.channel_message_type.equals(ChannelMessage.ChannelMsgType.SHARE_MESSAGE_TYPE) || message.channel_message_type.equals(ChannelMessage.ChannelMsgType.SUBSCRIBE_MESSAGE_TYPE)) {
++                return addGunPowder(spannable, 0, Color.parseColor(ChannelMessage.nickColor), 0,
++                        message.uid, -1, spannable.toString(), message.pureText,
++                        message.isReplay, false, false);
++            } else if (message instanceof TurnChairMessage) {
++                return addGunPowder(spannable, 0, Color.parseColor(ChannelMessage.giftTxtColor), 0,
++                        message.uid, -1, spannable.toString(), message.pureText,
++                        message.isReplay, false, false);
++            } else {
++                DanmuData data = new DanmuData(message.spannable, message.pureText, 0, -1, message.isReplay);
++                data.backGround = -1;
++                return addDanMuData(spannable, data);
++            }
++        } catch (Throwable throwable) {
++            MLog.error("DanMuUtil", "appendSpannableDanMu: ", throwable);
++        }
++        return null;
++    }
++
++
++    /**
++     * 渲染带有背景的 spannable 文字
++     *
++     * @param message
++     * @param spannable
++     * @param nickNameColor 名字的颜色
++     * @param textColor     发言内容的颜色
++     * @return
++     */
++    public Spannable setSpanColorAndBackground(ChannelMessage message,
++                                               Spannable spannable,
++                                               @ColorInt int nickNameColor,
++                                               @ColorInt int textColor) {
++        if (spannable == null) {
++            return null;
++        }
++        // 名字部分的 spannable
++        ForegroundColorSpan nameSpan
++                = new ForegroundColorSpan(nickNameColor);
++
++        // 发言部分的 spannable
++        ForegroundColorSpan textSpan
++                = new ForegroundColorSpan(textColor);
++
++        // 直接铺上发言样式
++        spannable.setSpan(textSpan, 0, spannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
++
++        // 查找名字部分，然后覆盖
++        if (!TextUtils.isEmpty(message.nickname)) {
++            int idx = spannable.toString().indexOf(message.nickname);
++            if (idx >= 0 && idx < spannable.length()) {
++                spannable.setSpan(nameSpan,
++                        idx,
++                        idx + message.nickname.length(),
++                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
++            }
++        }
++        return spannable;
++    }
++
++
++    private Spannable addMentel(ChannelMessage message, Spannable spannable, final Context context) {
++
++        // 7.8 重构 替换成新的解析代码
++        if (mParseManage == null) {
++            synchronized (DanMuMedalParseManage.class) {
++                if (mParseManage == null) {
++                    mParseManage = new DanMuMedalParseManage();
++                    mParseManage.initDanMuModelType();
++                    //下载icon后，不再补一条带icon的重复弹幕。
++                    // mParseManage.setIAppendDanMuListener(new IAppendDanMuListener() {
++                    //     @Override
++                    //     public void onUpdateCallback(ChannelMessage message, Context context) {
++                    //         appendDanmu(message, context);
++                    //     }
++                    // });
++                }
++            }
++        }
++        return mParseManage.parseDanMuSpannable(context, message, spannable);
++    }
++
++
++    public Spannable setSpanColor(ChannelMessage message, Spannable spannable, int nicknameColor, int textColor) {
++        if (spannable == null) {
++            return null;
++        }
++        spannable.setSpan(new ForegroundColorSpan(textColor), 0, spannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
++        if (!TextUtils.isEmpty(message.nickname)) {
++            int idx = spannable.toString().indexOf(message.nickname);
++            if (idx >= 0 && idx < spannable.length()) {
++                spannable.setSpan(new ForegroundColorSpan(nicknameColor), idx, idx + message.nickname.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
++            }
++        }
++        return spannable;
++    }
++
++    public void initGift(GiftChannelMessage message, Context context) {
++        int mGiftMessageImageSize = (int) ResolutionUtils.convertDpToPixel(ChannelMessage.GIFT_MESSAGE_IMAGE_SIZE_DP, context) + 1;
++        Spannable spannable = GiftFilter.INSTANCE.getSpannableString(context, R.drawable.lr_ic_default_gift, R.drawable.xunzhang_default_bitmap, mGiftMessageImageSize, mGiftMessageImageSize, message);
++        if ((message).type == GiftChannelMessage.GiftType.ComboGift) {
++            int x = message.text.lastIndexOf("X");
++            int zu = message.text.lastIndexOf("组");
++            spannable.setSpan(new AbsoluteSizeSpan(19, true), x + 1, zu, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
++        }
++        spannable = addMentel(message, spannable, context);
++        spannable = setSpanColor(message, spannable, Color.parseColor(ChannelMessage.nickColor), Color.parseColor(ChannelMessage.giftTxtColor));
++        // if (!MedalCenter.getInstance().isActMedal()) {
++//         addGunPowder(spannable, 2, Color.parseColor(ChannelMessage.giftTxtColor), 0, message.uid, -1, "", message.pureText, message.isReplay, true, false);
++        // }
++
++        DanmuData data = new DanmuData(spannable, message.pureText, 2, Color.parseColor(ChannelMessage.giftTxtColor), 0, message.uid);
++        data.priority = 2;
++        data.contend = "";
++        data.backGround = -1;
++        data.isReplay = message.isReplay;
++        data.isGiftMessage = true;
++        data.isAir = false;
++        data.pureText = message.pureText;
++        data.bgDrawable = null;
++        Emitter.INSTANCE.sendMessage(data);
++    }
++
++
++    @Override
++    public void classify(@NotNull BitmapGunPowder gunPowder) {
++
++    }
++
++
++    //处理贵族升级
++    private Spannable onAppendNobleLevelUpgradeChannelMessage(Context context, NobleLevelUpgradeChannelMessage msg) {
++        int resNobleIcon = com.yy.mobile.ui.streamlight.EntIdentityIconSet.getIconResId(msg.nobleLevel, com.yy.mobile.ui.streamlight.EntIdentityIconSet.DEF_ICON_SIZE);
++        return msg.getSpannableString(context, resNobleIcon);
++    }
++
++
++    public Drawable getFixedSizedNobleImage(int reSource, int w, int h, Context context) {
++        BitmapDrawable baseImage = ImageLoader.getBitmapDrawableFromResource(reSource, ImageConfig.fullImageConfig());
++        BitmapDrawable reSize = null;
++        int tw = (int) ResolutionUtils.convertDpToPixel(w, context);
++        int th = (int) ResolutionUtils.convertDpToPixel(h, context);
++        if (baseImage != null) {
++            reSize = ImageLoader.getBitmapFromCache(reSource + "" + tw + th);
++            if (reSize == null) {
++                Bitmap bitmap = baseImage.getBitmap();
++                if (bitmap == null) {
++                    return null;
++                }
++                bitmap = Bitmap.createScaledBitmap(bitmap, tw, th, true);
++                reSize = new BitmapDrawable(context.getResources(), bitmap);
++                ImageLoader.addBitmapToCache(reSource + "" + tw + th, reSize);
++            }
++            reSize.setBounds(0, 0, reSize.getIntrinsicWidth(), reSize.getIntrinsicHeight());
++        }
++        return reSize != null ? reSize : baseImage;
++    }
++
++    private DanmuData addGunPowder(Spannable span, int priority, int color, int lineNum, long senderUid,
++                                   int backGround, String contend, String pureText, boolean isReplay, boolean isGift, boolean isAir) {
++        return addGunPowder(span, priority, color, lineNum, senderUid,
++                backGround, contend, pureText, isReplay, isGift, isAir, null);
++    }
++
++    //支持设置弹幕背景样式的方法
++    private DanmuData addGunPowder(Spannable span, int priority, int color, int lineNum, long senderUid,
++                                   int backGround, String contend, String pureText, boolean isReplay, boolean isGift, boolean isAir, Drawable
++                                           bgDrawable) {
++
++        DanmuData data = new DanmuData(span, pureText, priority, color, lineNum, senderUid);
++        data.priority = priority;
++        data.contend = contend;
++        data.backGround = backGround;
++        data.isReplay = isReplay;
++        data.isGiftMessage = isGift;
++        data.isAir = isAir;
++        data.pureText = pureText;
++        data.bgDrawable = bgDrawable;
++        return data;
++    }
++
++}
+Index: plugin_ent_live_client/src/com/yy/live/module/giftdanmu/dataparser/GunpowderFactory.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- plugin_ent_live_client/src/com/yy/live/module/giftdanmu/dataparser/GunpowderFactory.kt	(date 1538196385981)
++++ plugin_ent_live_client/src/com/yy/live/module/giftdanmu/dataparser/GunpowderFactory.kt	(date 1538196385981)
+@@ -0,0 +1,30 @@
++package com.yy.live.module.giftdanmu.dataparser
++
++import com.yy.mobile.config.BasicConfig
++import com.yy.mobile.ui.basicgunview.danmucanvas.Bean.BitmapGunPowder
++import com.yy.mobile.ui.basicgunview.danmucanvas.Bean.DanmuData
++
++/**
++ * Created by PYF on 2018/9/28
++ */
++
++class GunpowderFactory private constructor() {
++    companion object {
++        var instance: GunpowderFactory = GunpowderFactory()
++    }
++
++    fun convertBaseData2Gunpowder(data: DanmuData): BitmapGunPowder {
++        val bitmapGunPowder = BitmapGunPowder(data.priority, data.backGround, data.contend,
++                BasicConfig.getInstance().appContext, null) //textview 暂时还没写
++        bitmapGunPowder.span = data.span
++        bitmapGunPowder.textColor = data.textColor
++        bitmapGunPowder.mTextSize = data.textSize.toFloat()
++        bitmapGunPowder.senderUid = data.senderUid
++        bitmapGunPowder.isReplay = data.isReplay
++        bitmapGunPowder.isGiftMessage = data.isGiftMessage
++        bitmapGunPowder.isAir = data.isAir
++        bitmapGunPowder.pureText = data.pureText
++        bitmapGunPowder.bgDrawable = data.bgDrawable
++        return bitmapGunPowder
++    }
++}
+\ No newline at end of file
+Index: plugin_ent_live_client/src/com/yy/live/module/giftdanmu/dataparser/IDanmuParser.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- plugin_ent_live_client/src/com/yy/live/module/giftdanmu/dataparser/IDanmuParser.kt	(date 1538145454281)
++++ plugin_ent_live_client/src/com/yy/live/module/giftdanmu/dataparser/IDanmuParser.kt	(date 1538145454281)
+@@ -0,0 +1,29 @@
++package com.yy.live.module.giftdanmu.dataparser
++
++import com.yy.mobile.ui.basicgunview.danmucanvas.Bean.BitmapGunPowder
++import com.yy.mobile.ui.basicgunview.danmucanvas.Bean.DanmuData
++import com.yymobile.core.channel.ChannelMessage
++
++/**
++ * Created by PYF on 2018/9/28
++ *
++ * 基础信息转换器  ChannelMessage -> BitmapGunPowder
++ */
++
++interface IDanmuParser {
++
++    /**
++     * 判断该转换器是否能转换该消息
++     */
++    fun intercept(message: ChannelMessage): Boolean
++
++    /**
++     * 将ChannelMessage -> BitmapGunPowder 具体实现。 可能存在很多个
++     */
++    fun parser(message: ChannelMessage): DanmuData
++
++    /**
++     * 分类存放BitmapGunPowder -> normal, my, priority
++     */
++    fun classify(gunPowder: BitmapGunPowder)
++}
+\ No newline at end of file
+Index: plugin_ent_live_client/src/com/yy/live/module/giftdanmu/filter/FlowerChinneFilter.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- plugin_ent_live_client/src/com/yy/live/module/giftdanmu/filter/FlowerChinneFilter.java	(date 1538120691404)
++++ plugin_ent_live_client/src/com/yy/live/module/giftdanmu/filter/FlowerChinneFilter.java	(date 1538120691404)
+@@ -0,0 +1,76 @@
++package com.yy.live.module.giftdanmu.filter;
++
++import android.content.Context;
++import android.graphics.Color;
++import android.graphics.drawable.BitmapDrawable;
++import android.text.Spannable;
++import android.text.SpannableString;
++import android.text.Spanned;
++import android.text.TextUtils;
++import android.text.style.ForegroundColorSpan;
++
++import com.duowan.mobile.entlive.R;
++import com.yy.mobile.imageloader.ImageUtil;
++import com.yy.mobile.ui.widget.CustomImageSpan;
++import com.yy.mobile.util.FP;
++import com.yy.mobile.util.ResolutionUtils;
++import com.yymobile.core.channel.ChannelMessage;
++import com.yymobile.core.flower.FlowerChinneMessage;
++
++import java.util.regex.Matcher;
++import java.util.regex.Pattern;
++
++public enum  FlowerChinneFilter {
++    INSTANCE;
++
++    private int nickLength = 7;
++
++    //处理送花的
++    public Spannable onAppendFlowerChinneMessage(Context context, FlowerChinneMessage msg) {
++        StringBuilder sb = new StringBuilder();
++        if (!FP.empty(msg.nickname)) {
++            if (msg.nickname.length() > nickLength) {
++                msg.nickname = msg.nickname.substring(0, nickLength);
++            }
++            sb.append(msg.nickname);
++            sb.append(" 送 ");
++        }
++        int res = R.drawable.icon_xiao_hua;
++        if (msg.isTrueLoveLv) {
++            res = R.drawable.icon_xiao_hua_rose;
++        }
++        sb.append(FlowerChinneMessage.REPLACE_IMGE_FLAG);
++        Spannable sp = new SpannableString(sb.toString());
++        // 送花颜色文案跟昵称一样
++//        sp.setSpan(new ForegroundColorSpan(Color.parseColor(ChannelMessage.nickColor)), 0, sp.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
++        sp = setSpanColor(msg, sp, Color.parseColor(ChannelMessage.nickColor), Color.parseColor(ChannelMessage.nickColor));
++        Pattern p = Pattern.compile(FlowerChinneMessage.REPLACE_IMGE_FLAG);
++        Matcher m = p.matcher(sb);
++        while (m.find()) {
++            if (!msg.nickname.contains(FlowerChinneMessage.REPLACE_IMGE_FLAG)) {
++                int mGiftMessageImageSize = (int) ResolutionUtils.convertDpToPixel(ChannelMessage.GIFT_MESSAGE_IMAGE_SIZE_DP, context);
++                BitmapDrawable bd;
++                bd = ImageUtil.getBitmapDrawableFromResource(mGiftMessageImageSize, mGiftMessageImageSize, res);
++                bd.setBounds(0, 0, mGiftMessageImageSize, mGiftMessageImageSize);
++
++                CustomImageSpan imageSpan = new CustomImageSpan(bd, CustomImageSpan.ALIGN_VERTICAL_CENTER);
++                sp.setSpan(imageSpan, m.start(), m.end(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
++            }
++        }
++        return sp;
++    }
++
++    public Spannable setSpanColor(ChannelMessage message, Spannable spannable, int nicknameColor, int textColor) {
++        if (spannable == null) {
++            return null;
++        }
++        spannable.setSpan(new ForegroundColorSpan(textColor), 0, spannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
++        if (!TextUtils.isEmpty(message.nickname)) {
++            int idx = spannable.toString().indexOf(message.nickname);
++            if (idx >= 0 && idx < spannable.length()) {
++                spannable.setSpan(new ForegroundColorSpan(nicknameColor), idx, idx + message.nickname.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
++            }
++        }
++        return spannable;
++    }
++}
+Index: plugin_ent_live_client/src/com/yy/live/module/giftdanmu/filter/GiftFilter.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- plugin_ent_live_client/src/com/yy/live/module/giftdanmu/filter/GiftFilter.java	(date 1538120157345)
++++ plugin_ent_live_client/src/com/yy/live/module/giftdanmu/filter/GiftFilter.java	(date 1538120157345)
+@@ -0,0 +1,73 @@
++package com.yy.live.module.giftdanmu.filter;
++
++import android.content.Context;
++import android.graphics.drawable.BitmapDrawable;
++import android.graphics.drawable.Drawable;
++import android.text.Spannable;
++import android.text.SpannableString;
++
++import com.yy.mobile.image.ImageConfig;
++import com.yy.mobile.imageloader.ImageLoader;
++import com.yy.mobile.imageloader.ImageUtil;
++import com.yy.mobile.ui.publicchat.model.medal.LiveRoomLoadDrawableWrapper;
++import com.yy.mobile.ui.widget.CustomImageSpan;
++import com.yy.mobile.util.ResolutionUtils;
++import com.yy.mobile.util.log.MLog;
++import com.yymobile.core.gift.GiftChannelMessage;
++import com.yymobile.core.gift.GiftConfigParser;
++
++public enum GiftFilter {
++    INSTANCE;
++
++    private static final String TAG = "GiftFilter";
++
++    public SpannableString getSpannableString(Context context, int loadingImgResId, int defaultXZ, int width, int height, GiftChannelMessage message) {
++        if (com.yy.mobile.util.FP.empty(message.text)) {
++            return null;
++        }
++
++        SpannableString sp = new SpannableString(message.text);
++        int type = message.giftTypeId;
++        final String giftIconUrl = GiftConfigParser.getInstance().getGiftIconPath(type);
++        if (giftIconUrl != null) {
++            try {
++                final ImageConfig imageConfig = new ImageConfig(width, height);
++                Drawable giftDrawable = ImageLoader.getBitmapFromCache(giftIconUrl, imageConfig);
++                if (giftDrawable == null) {
++                    giftDrawable = ImageLoader.getBitmapFromCache(giftIconUrl, ImageConfig.smallImageConfig());
++                    if (giftDrawable == null) {
++                        ImageLoader.preloadBitmap(giftIconUrl, imageConfig, loadingImgResId);
++                        giftDrawable = LiveRoomLoadDrawableWrapper.INSTANCE.getDrawableWithCache(context, loadingImgResId);
++                    }
++                }
++                giftDrawable.setBounds(0, 0, width, height);
++                String replace = "{" + type + "}";
++                int startIdx = sp.toString().indexOf(replace);
++                int endIdx = startIdx + replace.length();
++                if (startIdx > -1 && sp.length() >= endIdx) {
++                    sp.setSpan(new CustomImageSpan(giftDrawable, CustomImageSpan.ALIGN_VERTICAL_CENTER), startIdx, endIdx, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
++                }
++                loadMedal(context, sp, defaultXZ, width, height, message.medalUrl);
++            } catch (Throwable throwable) {
++                MLog.error(TAG, throwable);
++            }
++        }
++        return sp;
++    }
++
++    public void loadMedal(Context context, SpannableString sp, int defalutImgResId, int width, int height, String medalUrl) {
++        if (com.yy.mobile.util.FP.empty(medalUrl)) {
++            return;
++        }
++        ImageLoader.preloadBitmap(medalUrl, ImageConfig.fullImageConfig(), defalutImgResId);
++        BitmapDrawable medalDrawable = ImageLoader.getBitmapFromCache(medalUrl, ImageConfig.fullImageConfig());
++        if (medalDrawable == null) {
++            medalDrawable = ImageUtil.getBitmapDrawableFromResource(width, height, defalutImgResId);
++        }
++
++        int newWidth = (int) ResolutionUtils.convertDpToPixel(50.5f, context);
++        int newHeight = (int) ResolutionUtils.convertDpToPixel(21.5f, context);
++        medalDrawable.setBounds(0, 0, newWidth, newHeight);
++        sp.setSpan(new CustomImageSpan(medalDrawable, CustomImageSpan.ALIGN_VERTICAL_CENTER), 0, 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
++    }
++}
+Index: plugin_ent_live_client/src/com/yy/live/module/giftdanmu/filter/PublicChatBroadcastFilter.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- plugin_ent_live_client/src/com/yy/live/module/giftdanmu/filter/PublicChatBroadcastFilter.java	(date 1538120691561)
++++ plugin_ent_live_client/src/com/yy/live/module/giftdanmu/filter/PublicChatBroadcastFilter.java	(date 1538120691561)
+@@ -0,0 +1,232 @@
++package com.yy.live.module.giftdanmu.filter;
++
++import android.content.Context;
++import android.graphics.Bitmap;
++import android.graphics.Color;
++import android.graphics.drawable.BitmapDrawable;
++import android.graphics.drawable.Drawable;
++import android.support.v4.content.ContextCompat;
++import android.text.Spannable;
++import android.text.SpannableStringBuilder;
++import android.text.Spanned;
++import android.text.TextUtils;
++import android.text.style.AbsoluteSizeSpan;
++import android.text.style.ForegroundColorSpan;
++
++import com.duowan.mobile.entlive.R;
++import com.yy.mobile.config.BasicConfig;
++import com.yy.mobile.image.ImageConfig;
++import com.yy.mobile.imageloader.ImageLoader;
++import com.yy.mobile.imageloader.ImageUtil;
++import com.yy.mobile.ui.turntable.TurnTableUtils;
++import com.yy.mobile.ui.utils.SafeDrawableUtils;
++import com.yy.mobile.ui.utils.StringUtil;
++import com.yy.mobile.ui.widget.CustomImageSpan;
++import com.yy.mobile.util.FP;
++import com.yy.mobile.util.ResolutionUtils;
++import com.yymobile.core.gift.GiftConfigParser;
++import com.yymobile.core.messagequeue.BCItem;
++
++import java.util.regex.Matcher;
++import java.util.regex.Pattern;
++
++public enum PublicChatBroadcastFilter {
++    INSTANCE;
++
++    private static final String GIFT_PLACE_HOLDER = "[gift]";
++    private static final String BCTYPE_PLACE_HOLDER = "[bc]";
++    private static final String IN_CHANNEL_STR = "在频道";
++    private static final int maxNickLength = 12; //昵称最大长度限制
++    private static final int imgSize = (int) ResolutionUtils.convertDpToPixel(27, BasicConfig.getInstance().getAppContext());
++
++    /**
++     * 设置 中小飞机、热气球广播弹幕样式
++     *
++     * @param context 上下文参数
++     * @param item    广播实体
++     */
++    public SpannableStringBuilder getBroadCastDanMuSpannable(Context context, BCItem item) {
++
++        if (item.bcType == 0) { //0:礼物
++            return getCombGiftSpannable(item, context);
++        } else if (item.bcType == 1) { //1：热气球 或者 樱花
++            return getHotBallSpannable(item, context);
++        } else if (item.bcType == 4 || item.bcType == 5) { // 4、5 红包广播
++            return getRedPacketSpannable(item, context);
++        }
++        return null;
++    }
++
++    private SpannableStringBuilder getHotBallSpannable(BCItem item, Context context) {
++        SpannableStringBuilder spannable = new SpannableStringBuilder();
++
++        String fromNick = TextUtils.isEmpty(item.fromNick) ? "" : item.fromNick;
++        if (TextUtils.isEmpty(fromNick)) {
++            fromNick = TextUtils.isEmpty(item.extendInfo.get("name")) ? "" : item.extendInfo.get("name");
++        }
++        if (fromNick.length() > maxNickLength) {
++            fromNick = fromNick.substring(0, maxNickLength) + "...";
++        }
++
++        spannable.append(BCTYPE_PLACE_HOLDER)
++                .append(fromNick)
++                .append(IN_CHANNEL_STR)
++                .append(String.valueOf(item.sid));
++
++        Drawable bcTypeDrawable;
++        if (!FP.empty(item.extendInfo) && TurnTableUtils.checkIsCherryBlossomsBroadcast(
++                item.extendInfo.get(TurnTableUtils.TurnTableBroadCastKey))) {
++            spannable.append(" 送出浪漫奢华的浪漫樱花！");
++        } else {
++            spannable.append(" 送出浪漫奢华的热气球之约！");
++        }
++
++        //设置所有文本颜色
++        int idxStart = 0;
++        int idxEnd = spannable.toString().length();
++        spannable.setSpan(new AbsoluteSizeSpan(13, true), idxStart, idxEnd, Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
++        spannable.setSpan(new ForegroundColorSpan(Color.parseColor("#ffffff")), idxStart, idxEnd, Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
++
++        //设置樱花、热气球礼物Icon
++        int giftType = Integer.parseInt(item.extendInfo.get("gift_id"));
++        String giftIconUrl = GiftConfigParser.getInstance().getGiftIconPath(giftType);
++
++        if (!StringUtil.isNullOrEmpty(giftIconUrl)) {
++            bcTypeDrawable = ImageLoader.getBitmapFromCache(giftIconUrl, ImageConfig.smallImageConfig());
++            if (null == bcTypeDrawable) {
++                ImageLoader.preloadBitmap(giftIconUrl, ImageConfig.smallImageConfig(), R.drawable.lr_ic_default_gift);
++            }
++        } else {
++            bcTypeDrawable = SafeDrawableUtils.getDrawable(R.drawable.lr_ic_default_gift);
++        }
++
++        int idxBcIcon = spannable.toString().indexOf(BCTYPE_PLACE_HOLDER);
++        if (bcTypeDrawable != null) {
++            bcTypeDrawable.setBounds(0, 0, imgSize, imgSize);
++            spannable.setSpan(new CustomImageSpan(bcTypeDrawable, CustomImageSpan.ALIGN_VERTICAL_CENTER, 0, 8),
++                    idxBcIcon, idxBcIcon + BCTYPE_PLACE_HOLDER.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
++        } else {
++            spannable.replace(idxBcIcon, idxBcIcon + BCTYPE_PLACE_HOLDER.length(), "");
++        }
++
++        //设置“在频道”的字体样式
++        int idxChannel = spannable.toString().indexOf(IN_CHANNEL_STR);
++        int enIdxChannel = idxChannel + IN_CHANNEL_STR.length();
++        spannable.setSpan(new AbsoluteSizeSpan(13, true), idxChannel, enIdxChannel, Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
++        spannable.setSpan(new ForegroundColorSpan(Color.parseColor("#ffe00b")), idxChannel, enIdxChannel, Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
++
++        return spannable;
++    }
++
++    protected SpannableStringBuilder getCombGiftSpannable(BCItem item, Context context) {
++        SpannableStringBuilder spannable = new SpannableStringBuilder();
++        Drawable bcTypeDrawable;
++        String fromNick = TextUtils.isEmpty(item.fromNick) ? "" : item.fromNick;
++        if (fromNick.length() > maxNickLength) {
++            fromNick = fromNick.substring(0, maxNickLength) + "...";
++        }
++
++        String toNick = TextUtils.isEmpty(item.toNick) ? "" : item.toNick;
++        if (toNick.length() > maxNickLength) {
++            toNick = toNick.substring(0, maxNickLength) + "...";
++        }
++
++        spannable.append(BCTYPE_PLACE_HOLDER);
++        spannable.append(fromNick);
++        spannable.append("  送给  ");
++        spannable.append(toNick);
++        spannable.append(GIFT_PLACE_HOLDER);
++        String giftInfo = item.num + "x" + item.comboNum + "组";
++        spannable.append(giftInfo);
++        bcTypeDrawable = ContextCompat.getDrawable(context, R.drawable.ic_danmu_plane);
++        //设置送礼人的昵称样式
++        int idxFromNick = spannable.toString().indexOf(fromNick);
++        int enIdxFromNick = idxFromNick + fromNick.length();
++        spannable.setSpan(new AbsoluteSizeSpan(13, true), idxFromNick, enIdxFromNick, Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
++        spannable.setSpan(new ForegroundColorSpan(Color.parseColor("#ffffff")), idxFromNick, enIdxFromNick, Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
++
++        //设置“送给”的字体样式
++        int idxSend = enIdxFromNick;
++        int enIdxSend = idxSend + 4;
++        spannable.setSpan(new AbsoluteSizeSpan(11, true), idxSend, enIdxSend, Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
++        spannable.setSpan(new ForegroundColorSpan(Color.parseColor("#ffe00b")), idxSend, enIdxSend, Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
++
++        //设置收礼人的昵称样式
++        int idxToNick = spannable.toString().indexOf(toNick);
++        int enIdxToNick = idxToNick + toNick.length();
++        spannable.setSpan(new AbsoluteSizeSpan(13, true), idxToNick, enIdxToNick, Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
++        spannable.setSpan(new ForegroundColorSpan(Color.parseColor("#ffffff")), idxToNick, enIdxToNick, Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
++
++        //设置礼物信息样式
++        int idxGiftInfo = spannable.toString().indexOf(giftInfo);
++        int enIdxGiftInfo = idxGiftInfo + giftInfo.length();
++        spannable.setSpan(new AbsoluteSizeSpan(13, true), idxGiftInfo, enIdxGiftInfo, Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
++        spannable.setSpan(new ForegroundColorSpan(Color.parseColor("#ffffff")), idxGiftInfo, enIdxGiftInfo, Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
++
++        //设置礼物图标Icon
++        final String giftIconUrl = GiftConfigParser.getInstance().getGiftIconPath(item.type);
++        int mGiftMessageImageSize = (int) ResolutionUtils.convertDpToPixel(23, context) + 1;
++        final ImageConfig config = new ImageConfig(mGiftMessageImageSize, mGiftMessageImageSize);
++        Drawable bitmapDrawable = ImageLoader.getBitmapFromCache(giftIconUrl, config);
++        if (bitmapDrawable == null) {
++            ImageLoader.loadBitmap(BasicConfig.getInstance().getAppContext(), giftIconUrl, new ImageLoader.BitmapLoadListener() {
++                @Override
++                public void onLoadFailed(Exception e) {
++
++                }
++
++                @Override
++                public void onResourceReady(Bitmap bitmap) {
++                    BitmapDrawable bitmapDrawable = new BitmapDrawable(BasicConfig.getInstance().getAppContext().getResources(), bitmap);
++                    ImageLoader.addBitmapToCache(giftIconUrl, bitmapDrawable, config);
++                }
++            });
++            bitmapDrawable = context.getResources().getDrawable(R.drawable.lr_ic_default_gift);
++        }
++
++        int idxGiftIcon = spannable.toString().indexOf(GIFT_PLACE_HOLDER);
++        bitmapDrawable.setBounds(0, 0, mGiftMessageImageSize, mGiftMessageImageSize);
++        spannable.setSpan(new CustomImageSpan(bitmapDrawable, CustomImageSpan.ALIGN_VERTICAL_CENTER, 0, 0),
++                idxGiftIcon, idxGiftIcon + GIFT_PLACE_HOLDER.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
++        int idxBcIcon = spannable.toString().indexOf(BCTYPE_PLACE_HOLDER);
++        if (bcTypeDrawable != null) {
++            bcTypeDrawable.setBounds(0, 0, imgSize, imgSize);
++            spannable.setSpan(new CustomImageSpan(bcTypeDrawable, CustomImageSpan.ALIGN_VERTICAL_CENTER, 0, 8),
++                    idxBcIcon, idxBcIcon + BCTYPE_PLACE_HOLDER.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
++        } else {
++            spannable.replace(idxBcIcon, idxBcIcon + BCTYPE_PLACE_HOLDER.length(), "");
++        }
++        return spannable;
++    }
++
++
++    private SpannableStringBuilder getRedPacketSpannable(BCItem item, Context context) {
++        String nick = item.fromNick != null ? item.fromNick : "";
++        String toNick = item.toNick != null ? item.toNick : "";
++
++        if (nick.length() >= 7) {
++            nick = nick.substring(0, 7) + "...";
++        }
++
++        if (toNick.length() >= 7) {
++            toNick = toNick.substring(0, 7) + "...";
++        }
++
++        String src = nick + "在" + toNick + "直播间任性狂撒巨额" + "red_packet_flag " + "啦！";
++
++        final SpannableStringBuilder sp = new SpannableStringBuilder(src);
++        final Pattern p1 = Pattern.compile("red_packet_flag");
++        Matcher m1 = p1.matcher(src);
++
++        int width = (int) ResolutionUtils.convertDpToPixel(20f, context);
++        int height = (int) ResolutionUtils.convertDpToPixel(20f, context);
++
++        while (m1.find()) {
++            BitmapDrawable bd = ImageUtil.getBitmapDrawableFromResource(width, height, R.drawable.red_packet_bg);
++            bd.setBounds(0, 0, width, height);
++            CustomImageSpan imageSpan = new CustomImageSpan(bd, CustomImageSpan.ALIGN_VERTICAL_CENTER);
++            sp.setSpan(imageSpan, m1.start(), m1.end(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
++        }
++        return sp;
++    }
++}
+\ No newline at end of file
+Index: plugin_ent_live_client/src/com/yy/live/module/giftdanmu/newdanmu/Emitter.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- plugin_ent_live_client/src/com/yy/live/module/giftdanmu/newdanmu/Emitter.java	(date 1538224031970)
++++ plugin_ent_live_client/src/com/yy/live/module/giftdanmu/newdanmu/Emitter.java	(date 1538224031970)
+@@ -0,0 +1,355 @@
++package com.yy.live.module.giftdanmu.newdanmu;
++
++import android.content.Context;
++import android.util.TypedValue;
++import android.view.LayoutInflater;
++import android.view.View;
++import android.widget.TextView;
++
++import com.duowan.mobile.entlive.R;
++import com.yy.game.gametemplate.GameTemplateLandscapeConfig;
++import com.yy.live.module.giftdanmu.DanMuPosition;
++import com.yy.live.module.giftdanmu.dataparser.DanmuParserImpl;
++import com.yy.live.module.giftdanmu.dataparser.IDanmuParser;
++import com.yy.mobile.config.BasicConfig;
++import com.yy.mobile.ui.basicgunview.IDanmukuView;
++import com.yy.mobile.ui.basicgunview.danmucanvas.Bean.BitmapGunPowder;
++import com.yy.mobile.ui.basicgunview.danmucanvas.Bean.DanmuData;
++import com.yy.mobile.util.log.MLog;
++import com.yymobile.core.ICoreManagerBase;
++import com.yymobile.core.channel.ChannelMessage;
++import com.yymobile.core.invincibledanmu.IInvincibleDanmuCore;
++import com.yymobile.core.invincibledanmu.InvincibleDanmuInfo;
++
++import java.lang.ref.WeakReference;
++import java.util.HashMap;
++import java.util.concurrent.atomic.AtomicBoolean;
++import java.util.concurrent.atomic.AtomicInteger;
++
++public enum Emitter {
++
++    INSTANCE;
++
++    private static final String TAG = "Emitter";
++    private boolean openStatus = false;
++    private Thread task;
++    private IDanmuParser parser;
++    private int mDanmuTextSize = 14; //通过BitmapGunPowder构造参数mDanmuTextView来设置弹幕的大小，单位为sp
++    private TextView mDanmuTextView; // 缓存弹幕TextView
++    private AtomicBoolean door = new AtomicBoolean(true);
++    private AtomicInteger danmuCount = new AtomicInteger();
++    private WeakReference<IDanmukuView> mDanmuView = null;
++
++
++    public synchronized void checkTask() {
++        if (task == null) {
++            init();
++        }
++    }
++
++    private void init() {
++        task = new Thread() {
++            @Override
++            public void run() {
++                try {
++                    while (door.get()) {
++                        DanmuData tmp;
++                        tmp = StorePool.INSTANCE.take();
++                        if (tmp != null) {
++                            BitmapGunPowder tmpPowder;
++                            tmpPowder = new BitmapGunPowder(tmp.priority, tmp.backGround, tmp.contend,
++                                    BasicConfig.getInstance().getAppContext(), mDanmuTextView);
++                            tmpPowder.span = tmp.span;
++                            tmpPowder.textColor = tmp.textColor;
++                            tmpPowder.mTextSize = tmp.textSize;
++                            tmpPowder.senderUid = tmp.senderUid;
++                            tmpPowder.isReplay = tmp.isReplay;
++                            tmpPowder.isGiftMessage = tmp.isGiftMessage;
++                            tmpPowder.isAir = tmp.isAir;
++                            tmpPowder.pureText = tmp.pureText;
++                            tmpPowder.bgDrawable = tmp.bgDrawable;
++
++                            if (danmuCount.get() >= 80) {
++                                StorePool.INSTANCE.priorityDanmu.clear();
++                                StorePool.INSTANCE.normalDanmu.clear();
++                                StorePool.INSTANCE.myDanmu.clear();
++                                danmuCount.set(0);
++                            }
++                            danmuCount.incrementAndGet();
++                            addDanmu(tmpPowder);
++                        }
++                        Thread.sleep(300);
++                    }
++                } catch (InterruptedException e) {
++                    MLog.info("wangke", "DanMu thread end normal");
++
++                } catch (Throwable t) {
++                    MLog.info("wangke", "DanMu thread end error" + t.toString());
++                }
++            }
++        };
++        door.set(true);
++        task.start();
++    }
++
++    public void initDanmuTextView() {
++        if (mDanmuTextView == null) {
++            try {
++                LayoutInflater inflater = (LayoutInflater) BasicConfig.getInstance().getAppContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
++                View view = inflater.inflate(R.layout.danmu_message_item, null);
++                mDanmuTextView = view.findViewById(R.id.tv_danmu_content);
++            } catch (Throwable throwable) {
++                MLog.error(TAG, throwable);
++            }
++        }
++        mDanmuTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, getDanmuTextSize());
++    }
++
++    private DanMuPosition mCurrentPosition = GameTemplateLandscapeConfig.getInstance().getDanMuPosition();
++
++    public void open(boolean open) {
++        openStatus = open;
++        MLog.info("DanMuUtil", "isOpen=" + open);
++    }
++
++    public int getDanmuTextSize() {
++        return mDanmuTextSize;
++    }
++
++    public void setDanmuTextSize(int danmuTextSize) {
++        mDanmuTextSize = danmuTextSize;
++    }
++
++    public void setCurrentPosition(DanMuPosition mCurrentPosition) {
++        this.mCurrentPosition = mCurrentPosition;
++    }
++
++    public boolean isOpen() {
++        return openStatus;
++    }
++
++    public IDanmukuView getDanmuView() {
++        if (mDanmuView != null && mDanmuView.get() != null) {
++            return mDanmuView.get();
++        }
++        return null;
++    }
++
++    public void setDanmuView(IDanmukuView danmuView) {
++        mDanmuView = new WeakReference<>(danmuView);
++    }
++
++    IDanmuParser getParse(Context context) {
++        if (parser == null) {
++            parser = new DanmuParserImpl(context);
++        }
++        return parser;
++    }
++
++    public void appendDanmu(final ChannelMessage message, final Context context) {
++        DanmuData data = getParse(context).parser(message);
++        sendMessage(data);
++    }
++
++    public void sendMessage(DanmuData danmuData) {
++        if ((StorePool.INSTANCE.size()) > 200) {
++            stopDanmu();
++            open(true);
++        }
++        StorePool.INSTANCE.add(danmuData);
++    }
++
++    public void appendSpannableDanMu(ChannelMessage message, Context context) {
++        DanmuData data = getParse(context).parser(message);
++        sendMessage(data);
++    }
++
++    public void addDanmu(BitmapGunPowder bitmapGunPowder) {
++        if (bitmapGunPowder.isme && bitmapGunPowder.p > 10) {
++            StorePool.INSTANCE.myDanmu.add(bitmapGunPowder);
++        } else if (bitmapGunPowder.p > 0) {
++            StorePool.INSTANCE.priorityDanmu.add(bitmapGunPowder);
++        } else {
++            StorePool.INSTANCE.normalDanmu.add(bitmapGunPowder);
++        }
++    }
++
++    private boolean mSurfaceView = false;
++
++    public boolean isSurfaceView() {
++        return mSurfaceView;
++    }
++
++    public void setSurfaceView(boolean isSurfaceView) {
++        mSurfaceView = isSurfaceView;
++    }
++
++    public void pushDanmu(HashMap<Integer, Boolean> map) {
++        synchronized (danmuCount) {
++            if (!door.get()) {
++                return;
++            }
++
++            for (int i = map.size() - 1; i >= 0; i--) {
++                if (!map.get(i)) {
++                    return;
++                }
++
++                BitmapGunPowder tmp = null;
++                if (i == map.size() - 1) {
++                    if (StorePool.INSTANCE.myDanmu.size() != 0) {
++                        tmp = StorePool.INSTANCE.myDanmu.poll();
++                    } else if (StorePool.INSTANCE.priorityDanmu.size() != 0) {
++                        tmp = StorePool.INSTANCE.priorityDanmu.poll();
++                    } else {
++                        tmp = StorePool.INSTANCE.normalDanmu.poll();
++                    }
++                } else {
++                    tmp = StorePool.INSTANCE.normalDanmu.poll();
++                }
++                if (tmp != null) {
++                    tmp.convert(isSurfaceView());
++                    if (tmp.bitmap != null && mDanmuView != null && mDanmuView.get() != null) {
++                        mDanmuView.get().sendGunPower(tmp, i);
++                    }
++                    danmuCount.decrementAndGet();
++                }
++            }
++
++        }
++    }
++
++    public void pushDanmuFromButtomToTop(HashMap<Integer, Boolean> map) {
++        synchronized (danmuCount) {
++            if (door.get()) {
++                for (int i = map.size() - 1; i >= 0; i--) {
++                    if (map.get(i)) {
++                        BitmapGunPowder tmp = null;
++                        if (StorePool.INSTANCE.myDanmu.size() != 0) {
++                            tmp = StorePool.INSTANCE.myDanmu.poll();
++                        } else if (StorePool.INSTANCE.priorityDanmu.size() != 0) {
++                            tmp = StorePool.INSTANCE.priorityDanmu.poll();
++                        } else {
++                            tmp = StorePool.INSTANCE.normalDanmu.poll();
++                        }
++                        if (tmp != null) {
++                            tmp.convert(isSurfaceView());
++                            if (tmp.bitmap != null && mDanmuView != null && mDanmuView.get() != null) {
++                                mDanmuView.get().sendGunPower(tmp, i);
++                            }
++                            danmuCount.decrementAndGet();
++                        }
++                    }
++                }
++            }
++        }
++    }
++
++    public void pushDanmuForGameTemplate(HashMap<Integer, Boolean> map) {
++        synchronized (danmuCount) {
++            if (door.get()) {
++                for (int i = map.size() - 1; i >= 0; i--) {
++                    if (map.get(i) && isValidPosition(i)) {
++                        BitmapGunPowder tmp = null;
++                        if (StorePool.INSTANCE.myDanmu.size() != 0) {
++                            tmp = StorePool.INSTANCE.myDanmu.poll();
++                        } else if (StorePool.INSTANCE.priorityDanmu.size() != 0) {
++                            tmp = StorePool.INSTANCE.priorityDanmu.poll();
++                        } else {
++                            tmp = StorePool.INSTANCE.normalDanmu.poll();
++                        }
++                        if (tmp != null) {
++                            tmp.convert(isSurfaceView());
++                            if (tmp.bitmap != null && mDanmuView != null && mDanmuView.get() != null) {
++                                mDanmuView.get().sendGunPower(tmp, i);
++                            }
++                            danmuCount.decrementAndGet();
++                        }
++                    }
++                }
++            }
++        }
++    }
++
++    public void pushInvincibleDanmu(HashMap<Integer, Boolean> map) {
++        if (door.get()) {
++            for (int i = map.size() - 1; i >= 0; i--) {
++                if (map.get(i)) {
++                    if (i == map.size() - 1 && i != 0) {
++                        synchronized (danmuCount) {
++                            BitmapGunPowder tmp = null;
++                            if (StorePool.INSTANCE.myDanmu.size() != 0) {
++                                tmp = StorePool.INSTANCE.myDanmu.poll();
++                            } else if (StorePool.INSTANCE.priorityDanmu.size() != 0) {
++                                tmp = StorePool.INSTANCE.priorityDanmu.poll();
++                            } else {
++                                tmp = StorePool.INSTANCE.normalDanmu.poll();
++                            }
++                            if (tmp != null) {
++                                tmp.convert(isSurfaceView());
++                                if (tmp.bitmap != null && mDanmuView != null && mDanmuView.get() != null) {
++                                    mDanmuView.get().sendGunPower(tmp, i);
++                                }
++                                danmuCount.decrementAndGet();
++                            }
++                        }
++                    } else {
++                        InvincibleDanmuInfo info = ICoreManagerBase.getCore(IInvincibleDanmuCore.class).pollInvincibleDanmu();
++                        if (info != null) {
++                            info.createPowertoShell(null);
++                            if (info.bitmap != null && mDanmuView != null && mDanmuView.get() != null) {
++                                mDanmuView.get().sendGunPower(info, i);
++                            }
++                        }
++                    }
++
++                }
++            }
++
++        }
++    }
++
++    protected boolean isValidPosition(int i) {
++        switch (mCurrentPosition) {
++            case TOP:
++                if (i >= 0 && i <= 2) {
++                    return true;
++                }
++                break;
++            case BOTTOM:
++                if (i >= 5 && i <= 7) {
++                    return true;
++                }
++                break;
++            default:
++                return true;
++        }
++        return false;
++    }
++
++
++    public void stopDanmu() {
++        danmuCount = new AtomicInteger();
++        door.set(false);
++        if (task != null) {
++            task.interrupt();
++        }
++        task = null;
++        StorePool.INSTANCE.clear();
++        StorePool.INSTANCE.priorityDanmu.clear();
++        StorePool.INSTANCE.normalDanmu.clear();
++        StorePool.INSTANCE.myDanmu.clear();
++        openStatus = false;
++        MLog.info("DanMuUtil", "stopDanMu");
++    }
++
++    public void clear() {
++        mDanmuTextView = null;
++//        if(parser!=null){
++//            parser.clear(0)
++//        }
++        if (MLog.isLogLevelAboveDebug()) {
++            MLog.debug(TAG, " clearPublicChatMedal ");
++        }
++    }
++}
+\ No newline at end of file
+Index: plugin_ent_live_client/src/com/yy/live/module/giftdanmu/newdanmu/StorePool.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- plugin_ent_live_client/src/com/yy/live/module/giftdanmu/newdanmu/StorePool.java	(date 1538201555698)
++++ plugin_ent_live_client/src/com/yy/live/module/giftdanmu/newdanmu/StorePool.java	(date 1538201555698)
+@@ -0,0 +1,40 @@
++package com.yy.live.module.giftdanmu.newdanmu;
++
++import com.yy.mobile.ui.basicgunview.danmucanvas.Bean.BitmapGunPowder;
++import com.yy.mobile.ui.basicgunview.danmucanvas.Bean.DanmuData;
++
++import java.util.LinkedList;
++import java.util.concurrent.BlockingQueue;
++import java.util.concurrent.LinkedBlockingQueue;
++
++public enum StorePool {
++
++    INSTANCE;
++
++    private BlockingQueue<DanmuData> que = new LinkedBlockingQueue<>();
++    public LinkedList<BitmapGunPowder> priorityDanmu = new LinkedList<>();
++    public LinkedList<BitmapGunPowder> normalDanmu = new LinkedList<>();
++    public LinkedList<BitmapGunPowder> myDanmu = new LinkedList<>();
++
++
++    private static final String TAG = "StorePool";
++
++    public void add(DanmuData msg) {
++        if (msg == null) {
++            return;
++        }
++        que.add(msg);
++    }
++
++    public DanmuData take() throws InterruptedException {
++        return que.take();
++    }
++
++    public void clear() {
++        que.clear();
++    }
++
++    public int size() {
++        return que.size();
++    }
++}
+Index: plugin_ent_live_client/src/com/yy/live/module/InvincibleDanmu/InvincibleDanmuController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- plugin_ent_live_client/src/com/yy/live/module/InvincibleDanmu/InvincibleDanmuController.java	(revision 2278045)
++++ plugin_ent_live_client/src/com/yy/live/module/InvincibleDanmu/InvincibleDanmuController.java	(date 1538144656446)
+@@ -189,7 +189,7 @@
+             if (ICoreManagerBase.getCore(IMobileLiveCore.class) != null && !ICoreManagerBase.getCore(IMobileLiveCore.class).isLoginUserMobileLive()) { //用户端
+                 if (isLandscape) {
+                     pauseInvincibleDanmu();
+-                    LiveDanMuUtil.getInstance().checkTask(getActivity());
++                    LiveDanMuUtil.getInstance().checkTask();
+                 } else {
+                     resumeInvincibleDanmu();
+                 }
+@@ -221,7 +221,7 @@
+         if (isLandScape()
+                 && ICoreManagerBase.getCore(IMobileLiveCore.class) != null
+                 && !ICoreManagerBase.getCore(IMobileLiveCore.class).isLoginUserMobileLive()) { //用户端 横屏使用公平弹幕
+-            LiveDanMuUtil.getInstance().checkTask(getActivity());
++            LiveDanMuUtil.getInstance().checkTask();
+             return;
+         }
+ 
+Index: plugin_ent_live_client/src/com/yy/mobile/ui/channeltemplate/template/MobileLivePresenter.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- plugin_ent_live_client/src/com/yy/mobile/ui/channeltemplate/template/MobileLivePresenter.java	(revision 2278045)
++++ plugin_ent_live_client/src/com/yy/mobile/ui/channeltemplate/template/MobileLivePresenter.java	(date 1538145481579)
+@@ -84,7 +84,7 @@
+ //
+ //            // 按道理来说是切换到开播状态
+ //        }
+-        // 初始化插件属性
++        // 初始化插件属性   和Activity的onCreate重复了好多东西
+         PluginPropertyFactory.getInstance().initDefault();
+         core.setMobileLiveType(MobileLiveType.MOBILE_LIVE_TYPE_NORMAL);
+         //检查滤镜色表
+Index: plugin_ent_live_client/src/com/yy/mobile/ui/channeltemplate/MobileLiveActivity.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- plugin_ent_live_client/src/com/yy/mobile/ui/channeltemplate/MobileLiveActivity.java	(revision 2278045)
++++ plugin_ent_live_client/src/com/yy/mobile/ui/channeltemplate/MobileLiveActivity.java	(date 1538145481652)
+@@ -247,8 +247,8 @@
+         //TODO：开播状态判断
+         setupGradientBackground();
+         getWindow().setFlags(WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED, WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);
+-        boolean mPreviewMode = isPreViewMode();
+-        boolean mIsGreenChannel = isQuickMode();
++        boolean mPreviewMode = isPreViewMode(); //预览模式
++        boolean mIsGreenChannel = isQuickMode(); //快速启动，应该是指欢乐篮球、游戏这种快速启动
+         if (mIsGreenChannel) {
+             mPreviewMode = false;
+         }
+@@ -269,11 +269,11 @@
+         }
+         activePayOnePlugin();
+         // 初始化插件属性
+-        PluginPropertyFactory.getInstance().initDefault();
+-        initTemplate();
++        PluginPropertyFactory.getInstance().initDefault(); //和Presenter.onCreate() 重复
++        initTemplate(); //初始化模板。巨TM多的Component正在路上
+         //fix push bug
+         LAST_INSTANCE = hashCode();
+-        ICoreManagerBase.getCore(IMobileLiveCore.class).setMobileLiveType(MobileLiveType.MOBILE_LIVE_TYPE_NORMAL);
++        ICoreManagerBase.getCore(IMobileLiveCore.class).setMobileLiveType(MobileLiveType.MOBILE_LIVE_TYPE_NORMAL); //前面不是已经声明了个临时变量了么233333
+         if (ICoreManagerBase.getCore(IMobileLiveStickerCore.class).isStickerSwitchOpen()) {
+             ICoreManagerBase.getCore(IMobileLiveStickerCore.class).requestStickerContent();
+             ((IMobileLiveStickerCoreEXT) ICoreManagerBase.getCore(IMobileLiveStickerCore.class)).requestEmotionStickerContent(); //新增脸部表情贴纸
+@@ -284,8 +284,8 @@
+         mNeedSendNotify = false;
+ 
+         Small.startAction(new Intent("LIVEROOM_ENTER"), this);
+-        checkFreeDataGuidePolicy(true);
+-        mGuidePresenter.init(this);
++        checkFreeDataGuidePolicy(true); //免流服务检测
++        mGuidePresenter.init(this); //各式各样的引导
+         initInteractController();
+         PluginCenterController.INSTANCE.init(TAG, this);
+         if (ICoreManagerBase.getCore(IMobileLiveFilterCore.class) != null) {
+@@ -296,7 +296,7 @@
+         }
+         isDanmuEnabled = LiveDanMuUtil.getInstance().isDanmuEnabled();
+         setPublicMessageMode(PublicMessagePlusManager.isOpenPlus(this), PublicMessagePlusManager.isLandScape(this));
+-        SubscribedNotifyOpenPushPermissionManager.showSubscribedNotifyDialog(null, 0, "", IGuidePop.Companion.getFROM_START_LIVE());
++        SubscribedNotifyOpenPushPermissionManager.showSubscribedNotifyDialog(null, 0, "", IGuidePop.Companion.getFROM_START_LIVE()); //没太懂
+         LiveRoomLoadDrawableWrapper.INSTANCE.init(TAG);
+     }
+ 
+@@ -842,7 +842,7 @@
+     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+         //        super.onActivityResult(requestCode, resultCode, data); //为啥不跑super？
+         MLog.info(TAG, "requestCode=" + requestCode + " resultCode=" + resultCode);
+-        if (requestCode == MobileLivePreviewShowPresenter.TAKE_PHOTO_OK && mCurrentTemplate != null) {
++        if (requestCode == MobileLivePreviewShowPresenter.TAKE_PHOTO_OK && mCurrentTemplate != null) { //封面请求
+             List<IComponent> componentList = mCurrentTemplate.getComponents();
+             if (componentList != null && componentList.size() > 0) {
+                 for (IComponent component : componentList) {
+@@ -854,11 +854,11 @@
+                     }
+                 }
+             }
+-        } else if (requestCode == MobileLivePreviewShowPresenter.RETURN_FROM_LOGIN && resultCode == 1) {
++        } else if (requestCode == MobileLivePreviewShowPresenter.RETURN_FROM_LOGIN && resultCode == 1) { //登录
+             //统计开播预览登录成功
+             CoreFactory.getCore(IHiidoStatisticCore.class).sendEventStatistic(LoginUtil.getUid(), IHiidoStatisticCore.EVENT_ID_LIVE_SETTING,
+                     IHiidoStatisticCore.EVENT_LABEL_LIVE_SETTING_LOGIN_SUCCEED_MOBILELIVE);
+-        } else if (requestCode == MoblieLiveChangePreviewPresenter.TAKE_PHOTO_CODE || requestCode == MoblieLiveChangePreviewPresenter.EDIT_PHOTO_CODE) {
++        } else if (requestCode == MoblieLiveChangePreviewPresenter.TAKE_PHOTO_CODE || requestCode == MoblieLiveChangePreviewPresenter.EDIT_PHOTO_CODE) { //封面请求
+             Fragment mobileLiveChangePreviewFragment = getSupportFragmentManager().findFragmentByTag(MoblieLiveChangePreviewComponent.TAG);
+             if (mobileLiveChangePreviewFragment != null) {
+                 mobileLiveChangePreviewFragment.onActivityResult(requestCode, resultCode, data);
+Index: plugin_ent_live_client/src/com/yy/mobile/ui/flowmanagement/anchor/MobileLiveVideoFlowComponent.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- plugin_ent_live_client/src/com/yy/mobile/ui/flowmanagement/anchor/MobileLiveVideoFlowComponent.java	(revision 2278045)
++++ plugin_ent_live_client/src/com/yy/mobile/ui/flowmanagement/anchor/MobileLiveVideoFlowComponent.java	(date 1538145481699)
+@@ -75,7 +75,7 @@
+     protected static final String IS_MOBILE_LIVE_HOST = "is_mobile_live_host";
+ 
+     private VideoPreviewLayout mVideoPreviewLayout;
+-    private VideoPreviewStartLiveHandler mVideoPreviewStartLiveHandler;
++    private VideoPreviewStartLiveHandler mVideoPreviewStartLiveHandler; //这里的handler基本上都是把busEvent单独抽出来的。
+     private VideoOrientationHandler mVideoOrientationHandler;
+     private VideoParamsAdjustHandler mVideoParamsAdjustHandler;
+     private VideoEffectEventHandler mVideoEffectEventHandler;
+@@ -129,8 +129,8 @@
+         Bundle args = getArguments();
+         mIsMobileLiveHost = args == null || args.getBoolean(IS_MOBILE_LIVE_HOST, true);
+ 
+-        setPreviewing();
+-        changeScreenToLandscapeIfNeeded(mPreviewing);
++        setPreviewing(); //判断是否预览模式
++        changeScreenToLandscapeIfNeeded(mPreviewing); //横屏
+ 
+         setLiveType(mIsMobileLiveHost);
+         setHasJoinedChannel();
+@@ -339,7 +339,7 @@
+         }
+     }
+ 
+-    private void setLiveType(boolean isMobileLiveHost) {
++    private void setLiveType(boolean isMobileLiveHost) { //初始化开播模式
+         int liveType = getActivity().getIntent().getIntExtra(MOBILE_LIVE_TYPE, 0);
+         MLog.info(TAG, "[setLiveType] liveType=%d, mPreviewing=%b", liveType, mPreviewing);
+         //开始推流时才初始化model，所以需要判断mPreviewing字段
+@@ -347,7 +347,7 @@
+             MobileLiveModelManager.instance().initModel(liveType);
+         }
+ 
+-        if (liveType == MobileLiveModelBaseManager.MOBILE_LIVE_MODEL_TYPE_MULTI_LIVE) {
++        if (liveType == MobileLiveModelBaseManager.MOBILE_LIVE_MODEL_TYPE_MULTI_LIVE) { //多人连麦
+             MediaCoreFlowImplGetter.get().setLiveType(LiveConfig.Type.MULIT_LIVE_LIANMAI);
+         } else {
+             if (!isMobileLiveHost) {
+@@ -440,7 +440,7 @@
+         }
+ 
+         MLog.info(TAG, "onAnchorBackground() called");
+-        if (VideoPreviewCheckUtil.isVideoPreviewValid(mVideoPreviewLayout, TAG, "onAnchorBackground")) {
++        if (VideoPreviewCheckUtil.isVideoPreviewValid(mVideoPreviewLayout, TAG, "onAnchorBackground")) { //没太看懂在干吗
+             updatePublisherAppReverse16Value(1, mVideoPreviewLayout.getVideoPublisher());
+         }
+ 
