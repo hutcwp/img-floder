@@ -1,7 +1,8 @@
 {
 	"musics": [{
-			"name": "Google",
-			"url": "http://www.google.com"
+			"name": "会呼吸的痛",
+			"url": "https://webfs.yun.kugou.com/202003080021/ba09b4e52ffc46c63f1212391bc75694/part/0/961492/G002/M08/15/05/ooYBAFS25x6AD5qCAEKzBPPP95Y966.mp3",
+			"mv":"http://fs.mv.web.kugou.com/202003080027/c0f0d9d592f0bca0d9f452c18319de22/G138/M02/04/08/apQEAFttHJeAPRwoAYGcZJxP-iU243.mp4"
 		},
 		{
 			"name": "Baidu",
