@@ -10,9 +10,9 @@
 			"mv": "http://fs.mv.web.kugou.com/202003081442/8465f29bd2bbb49e46d22035a72f5797/G102/M01/02/19/pg0DAFjcqW-Aad5PATpk1iBuS1Q779.mp4"
 		},
 		{
-			"name": "SoSo",
-			"url": "http://www.SoSo.com",
-			"mv": ""
+			"name": "实例视频",
+			"url": "http://alcdn.hls.xiaoka.tv/2017427/14b/7b3/Jzq08Sl8BbyELNTo/index.m3u8",
+			"mv": "http://alcdn.hls.xiaoka.tv/2017427/14b/7b3/Jzq08Sl8BbyELNTo/index.m3u8"
 		}
 	]
 }
